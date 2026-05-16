@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${modoEdicion} ? 'Editar Entrega' : 'Nueva Entrega'">Entrega</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('entregas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/entregas}" class="crumb">Entregas</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${modoEdicion} ? 'Editar' : 'Nueva'"></span>
+                    <div class="topbar-right">
+                        <a th:href="@{/entregas}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title"
+                                 th:text="${modoEdicion} ? 'Editar Entrega' : 'Nueva Entrega'"></div>
+                            <div class="page-sub">Completa los datos de la entrega</div>
+                        </div>
+                    </div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="card" style="padding:20px;">
+                        <form th:action="${modoEdicion} ? @{/entregas/actualizar} : @{/entregas/guardar}"
+                              method="post">
+                            <input th:if="${modoEdicion}" type="hidden" name="id" th:value="${entrega.id}">
+
+                            <div class="field-grid">
+
+                                <div class="field">
+                                    <label>Venta *</label>
+                                    <select class="input" name="ventaId" required>
+                                        <option value=""> Seleccione una venta </option>
+                                        <option th:each="v : ${ventas}"
+                                                th:value="${v.id}"
+                                                th:text="${v.codigoVenta}"
+                                                th:selected="${entrega.venta != null
+                                                and entrega.venta.id == v.id}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label>Cliente *</label>
+                                    <select class="input" name="clienteId" required>
+                                        <option value=""> Seleccione </option>
+                                        <option th:each="c : ${clientes}"
+                                                th:value="${c.id}"
+                                                th:text="${c.nombre + ' ' + c.apellido}"
+                                                th:selected="${entrega.cliente != null
+                                                and c.id == entrega.cliente.id}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label>Administrador *</label>
+                                    <select class="input" name="administradorId" required>
+                                        <option value=""> Seleccione </option>
+                                        <option th:each="a : ${admins}"
+                                                th:value="${a.id}"
+                                                th:text="${a.nombre + ' ' + a.apellido}"
+                                                th:selected="${entrega.administrador != null
+                                                and a.id == entrega.administrador.id}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label>Método de entrega *</label>
+                                    <select class="input" name="metodoEntrega" required>
+                                        <option value=""> Seleccione </option>
+                                        <option value="Domicilio"
+                                                th:selected="${entrega.metodoEntrega == 'Domicilio'}">
+                                            Domicilio</option>
+                                        <option value="Retiro en tienda"
+                                                th:selected="${entrega.metodoEntrega == 'Retiro en tienda'}">
+                                            Retiro en tienda</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label>Estado *</label>
+                                    <select class="input" name="estadoEntrega" required>
+                                        <option value=""> Seleccione </option>
+                                        <option value="Pendiente"
+                                                th:selected="${entrega.estadoEntrega == 'Pendiente'}">Pendiente</option>
+                                        <option value="En camino"
+                                                th:selected="${entrega.estadoEntrega == 'En camino'}">En camino</option>
+                                        <option value="Entregado"
+                                                th:selected="${entrega.estadoEntrega == 'Entregado'}">Entregado</option>
+                                        <option value="Cancelado"
+                                                th:selected="${entrega.estadoEntrega == 'Cancelado'}">Cancelado</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label>Costo de envío (₡)</label>
+                                    <input class="input" type="number" name="costoEnvio"
+                                           th:value="${entrega.costoEnvio}" min="0" step="0.01">
+                                </div>
+
+                                <div class="field">
+                                    <label>Fecha programada *</label>
+                                    <input class="input" type="date" name="fechaProgramada"
+                                           th:value="${entrega.fechaProgramada}" required>
+                                </div>
+
+                                <div class="field">
+                                    <label>Fecha entregada</label>
+                                    <input class="input" type="date" name="fechaEntregada"
+                                           th:value="${entrega.fechaEntregada}">
+                                </div>
+
+                                <div class="field" style="grid-column:span 2">
+                                    <label>Dirección *</label>
+                                    <input class="input" type="text" name="direccionEntrega"
+                                           th:value="${entrega.direccionEntrega}"
+                                           maxlength="255" required>
+                                </div>
+
+                                <div class="field" style="grid-column:span 2">
+                                    <label>Observaciones</label>
+                                    <textarea class="input" name="observaciones"
+                                              th:text="${entrega.observaciones}"
+                                              maxlength="255"></textarea>
+                                </div>
+
+                                <div class="field" th:if="${modoEdicion}">
+                                    <label class="check-opt">
+                                        <input type="checkbox" name="confirmada" value="true"
+                                               th:checked="${entrega.confirmada}">
+                                        <span class="check-box">
+                                            <svg viewBox="0 0 12 10">
+                                            <polyline points="1.5 5 4.5 8.5 10.5 1.5"/>
+                                            </svg>
+                                        </span>
+                                        Entrega confirmada
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;">
+                                <button type="submit" class="btn btn-primary"
+                                        th:text="${modoEdicion} ? 'Actualizar' : 'Guardar'">
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

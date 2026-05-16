@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${modoEdicion} ? 'Editar Planta' : 'Nueva Planta'">Planta</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('plantas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/plantas/}" class="crumb">Plantas</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${modoEdicion} ? 'Editar' : 'Nueva'"></span>
+                    <div class="topbar-right">
+                        <a th:href="@{/plantas/}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title" th:text="${modoEdicion} ? 'Editar Planta' : 'Nueva Planta'"></div>
+                            <div class="page-sub">Completa los datos de la planta</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="card" style="padding:20px;">
+                        <form th:action="${modoEdicion} ? @{/plantas/actualizar} : @{/plantas/guardar}"
+                              method="post" enctype="multipart/form-data">
+
+                            <input th:if="${modoEdicion}" type="hidden" name="id" th:value="${planta.id}"/>
+
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Nombre común *</label>
+                                    <input class="input" type="text" name="nombreComun"
+                                           th:value="${planta.nombreComun}" maxlength="100" required>
+                                </div>
+                                <div class="field">
+                                    <label>Nombre científico *</label>
+                                    <input class="input" type="text" name="nombreCientifico"
+                                           th:value="${planta.nombreCientifico}" maxlength="100" required>
+                                </div>
+                                <div class="field">
+                                    <label>Precio (₡) *</label>
+                                    <input class="input" type="number" name="precio"
+                                           th:value="${planta.precio}" step="0.01" min="0" required>
+                                </div>
+                                <div class="field">
+                                    <label>Tipo *</label>
+                                    <input class="input" type="text" name="tipo"
+                                           th:value="${planta.tipo}" maxlength="50"
+                                           placeholder="Ej: Interior, Exterior, Suculenta" required>
+                                </div>
+                                <div class="field">
+                                    <label>Cantidad *</label>
+                                    <input class="input" type="number" name="cantidad"
+                                           th:value="${planta.cantidad}" min="0" required>
+                                </div>
+                                <div class="field">
+                                    <label>Imagen</label>
+                                    <input class="input" type="file" name="imagen" accept="image/*">
+                                    <div th:if="${modoEdicion and planta.datosImagen != null}" style="margin-top:6px;">
+                                        <img th:src="@{'/plantas/imagen/' + ${planta.id}}"
+                                             style="height:60px;border-radius:6px;object-fit:cover;" alt="imagen actual">
+                                        <div style="font-size:11px;color:var(--gris);">Imagen actual (dejar vacío para mantener)</div>
+                                    </div>
+                                </div>
+                                <div class="field" style="grid-column:span 2">
+                                    <label>Descripción de cuidados</label>
+                                    <textarea class="input" name="descripcionCuidados"
+                                              maxlength="500" rows="3"
+                                              placeholder="Instrucciones de riego, luz, temperatura..."
+                                              th:text="${planta.descripcionCuidados}"></textarea>
+                                </div>
+                                <div class="field">
+                                    <label class="check-opt">
+                                        <input type="checkbox" name="requiereSol" value="true"
+                                               th:checked="${planta.requiereSol}">
+                                        <span class="check-box">
+                                            <svg viewBox="0 0 12 10"><polyline points="1.5 5 4.5 8.5 10.5 1.5"/></svg>
+                                        </span>
+                                        Requiere sol directo
+                                    </label>
+                                </div>
+                                <div class="field" th:if="${modoEdicion}">
+                                    <label class="check-opt">
+                                        <input type="checkbox" name="activo" value="true"
+                                               th:checked="${planta.activo}">
+                                        <span class="check-box">
+                                            <svg viewBox="0 0 12 10"><polyline points="1.5 5 4.5 8.5 10.5 1.5"/></svg>
+                                        </span>
+                                        Planta activa
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;display:flex;gap:8px;">
+                                <button type="submit" class="btn btn-primary"
+                                        th:text="${modoEdicion} ? 'Actualizar planta' : 'Guardar planta'"></button>
+                                <a th:href="@{/plantas/}" class="btn btn-outline">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

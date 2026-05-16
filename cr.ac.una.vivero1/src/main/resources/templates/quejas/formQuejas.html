@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Queja o Sugerencia</title>
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+
+            <th:block th:if="${esCliente != null and esCliente}">
+                <aside th:replace="~{fragmentos :: sidebarCliente('quejas')}"></aside>
+            </th:block>
+            <th:block th:if="${esCliente == null or !esCliente}">
+                <aside th:replace="~{fragmentos :: sidebar('quejas')}"></aside>
+            </th:block>
+
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <a th:if="${esCliente == null or !esCliente}" th:href="@{/quejas/}" class="crumb">Quejas y Sugerencias</a>
+                    <span th:if="${esCliente == null or !esCliente}" class="crumb-sep">›</span>
+                    <span class="crumb-now"
+                          th:text="${esCliente != null and esCliente} ? 'Nueva Queja o Sugerencia'
+                          : (${modoEdicion != null and modoEdicion} ? 'Editar' : 'Nueva')">
+                    </span>
+                    <div class="topbar-right">
+                        <a th:href="${esCliente != null and esCliente} ? @{/inicio/cliente} : @{/quejas/}"
+                           class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title"
+                                 th:text="${esCliente != null and esCliente} ? 'Nueva Queja o Sugerencia'
+                                 : (${modoEdicion != null and modoEdicion} ? 'Editar Queja o Sugerencia' : 'Nueva Queja o Sugerencia')">
+                            </div>
+                            <div class="page-sub"
+                                 th:text="${esCliente != null and esCliente}
+                                 ? 'Completá el formulario y lo revisaremos a la brevedad.'
+                                 : (${modoEdicion != null and modoEdicion} ? 'Modificá los datos y guardá los cambios.'
+                                 : 'Completá el formulario para registrar la queja.')">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <div class="card" style="padding:20px;">
+                        <form th:action="${esCliente != null and esCliente} ? @{/quejas/guardarCliente}
+                              : (${modoEdicion != null and modoEdicion} ? @{/quejas/actualizar} : @{/quejas/guardar})"
+                              method="post" th:object="${queja}">
+
+                            <!-- ID oculto para edición -->
+                            <input th:if="${modoEdicion != null and modoEdicion}"
+                                   type="hidden" name="id" th:value="${queja.id}"/>
+
+                            <div class="field-grid">
+
+                                <!-- CAMPOS SOLO ADMIN -->
+                                <div class="field" th:if="${esCliente == null or !esCliente}">
+                                    <label>Cliente <span class="req">*</span></label>
+                                    <select class="input" name="clienteId" required>
+                                        <option value="0">— Seleccione —</option>
+                                        <option th:each="c : ${clientes}"
+                                                th:value="${c.id}"
+                                                th:text="${c.nombre} + ' ' + ${c.apellido}"
+                                                th:selected="${queja.cliente != null and queja.cliente.id == c.id}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="field" th:if="${esCliente == null or !esCliente}">
+                                    <label>Administrador responsable</label>
+                                    <select class="input" name="adminId">
+                                        <option value="0">— Sin asignar —</option>
+                                        <option th:each="a : ${admins}"
+                                                th:value="${a.id}"
+                                                th:text="${a.nombre} + ' ' + ${a.apellido}"
+                                                th:selected="${queja.admin != null and queja.admin.id == a.id}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- TIPO Y CATEGORÍA (comunes) -->
+                                <div class="field">
+                                    <label>Tipo de registro <span class="req">*</span></label>
+                                    <select class="input" name="tipoRegistro" required>
+                                        <option value="">— Seleccione —</option>
+                                        <option value="Queja"
+                                                th:selected="${queja.tipoRegistro == 'Queja'}">Queja</option>
+                                        <option value="Sugerencia"
+                                                th:selected="${queja.tipoRegistro == 'Sugerencia'}">Sugerencia</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label>Categoría <span class="req">*</span></label>
+                                    <select class="input" name="categoria" required>
+                                        <option value=""> Seleccione </option>
+                                        <option value="Atención al Cliente"
+                                                th:selected="${queja.categoria == 'Atención al Cliente'}">Atención al Cliente</option>
+                                        <option value="Productos"
+                                                th:selected="${queja.categoria == 'Productos'}">Productos</option>
+                                        <option value="Precios"
+                                                th:selected="${queja.categoria == 'Precios'}">Precios</option>
+                                        <option value="Personal"
+                                                th:selected="${queja.categoria == 'Personal'}">Personal</option>
+                                        <option value="Otro"
+                                                th:selected="${queja.categoria == 'Otro'}">Otro</option>
+                                    </select>
+                                </div>
+
+                                <!-- ESTADO SOLO ADMIN EN EDICIÓN -->
+                                <div class="field" th:if="${(esCliente == null or !esCliente) and (modoEdicion != null and modoEdicion)}">
+                                    <label>Estado</label>
+                                    <select class="input" name="estado">
+                                        <option value="Pendiente"
+                                                th:selected="${queja.estado == 'Pendiente'}">Pendiente</option>
+                                        <option value="En proceso"
+                                                th:selected="${queja.estado == 'En proceso'}">En proceso</option>
+                                        <option value="Resuelta"
+                                                th:selected="${queja.estado == 'Resuelta'}">Resuelta</option>
+                                    </select>
+                                </div>
+
+                                <!-- DESCRIPCIÓN (común) -->
+                                <div class="field" style="grid-column: span 2">
+                                    <label>Descripción <span class="req">*</span></label>
+                                    <textarea class="input" name="descripcion" id="descripcion"
+                                              rows="4" maxlength="500" required
+                                              placeholder="Describe tu queja o sugerencia (mínimo 10 caracteres)..."
+                                              th:text="${queja.descripcion}"></textarea>
+                                    <span id="msgDesc" class="hint" style="color:var(--rojo); display:none;">
+                                        La descripción debe tener al menos 10 caracteres.
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            <div style="margin-top:16px; display:flex; gap:8px;">
+                                <button type="submit" class="btn btn-primary"
+                                        th:text="${esCliente != null and esCliente} ? 'Enviar'
+                                        : (${modoEdicion != null and modoEdicion} ? 'Guardar Cambios' : 'Registrar Queja')">
+                                </button>
+                                <a th:href="${esCliente != null and esCliente} ? @{/inicio/cliente} : @{/quejas/}"
+                                   class="btn btn-outline">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const desc = document.getElementById('descripcion');
+            const msgDesc = document.getElementById('msgDesc');
+
+            desc.closest('form').addEventListener('submit', function (e) {
+                if (desc.value.trim().length < 10) {
+                    msgDesc.style.display = 'block';
+                    desc.focus();
+                    e.preventDefault();
+                }
+            });
+
+            desc.addEventListener('input', function () {
+                if (desc.value.trim().length >= 10) {
+                    msgDesc.style.display = 'none';
+                }
+            });
+        </script>
+    </body>
+</html>

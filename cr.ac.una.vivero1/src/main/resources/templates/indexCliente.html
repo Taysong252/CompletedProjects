@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Mi Portal</title>
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebarCliente('inicio')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb-now">Mi Portal</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/logout}" class="btn btn-outline btn-sm">🚪 Cerrar sesión</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">
+                                Hola, <span th:text="${session.usuarioActivo?.nombre} ?: 'Cliente'">Cliente</span> 👋
+                            </div>
+                            <div class="page-sub">Bienvenido a GreenHarmony — tu vivero de confianza</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok">✅ <span th:text="${exito}"></span></div>
+
+                    <div class="dashboard-grid dashboard-grid-sm">
+                        <a th:href="@{/visitas/add}" class="dash-card dash-card-highlight">
+                            <div class="dash-icon">📅</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Solicitar Visita</div>
+                                <div class="dash-desc">Reserva una visita al vivero</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+
+                        <div class="dash-card" style="cursor:pointer;" onclick="toggleMisVisitas()">
+                            <div class="dash-icon">🗓️</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Mis Visitas</div>
+                                <div class="dash-desc">Ver estado de tus solicitudes</div>
+                            </div>
+                            <div class="dash-arrow" id="flechaMisVisitas">›</div>
+                        </div>
+
+                        <!-- Tarjeta Catálogo -->
+                        <div class="dash-card" style="cursor:pointer;" onclick="toggleCatalogo()">
+                            <div class="dash-icon">🌿</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Catálogo de Plantas</div>
+                                <div class="dash-desc">Explora nuestras plantas disponibles</div>
+                            </div>
+                            <div class="dash-arrow" id="flechaCatalogo">›</div>
+                        </div>
+
+                        <a th:href="@{/promociones/}" class="dash-card">
+                            <div class="dash-icon">🏷️</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Promociones</div>
+                                <div class="dash-desc">Descuentos y ofertas</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+
+                        <a th:href="@{/quejas/miQueja}" class="dash-card">
+                            <div class="dash-icon">📋</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Quejas y Sugerencias</div>
+                                <div class="dash-desc">Envianos tu opinión</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                    </div>
+
+                    <!-- Panel Mis Visitas -->
+                    <div id="panelMisVisitas" style="display:none; margin-top: 20px;">
+                        <div class="card">
+                            <div class="card-head">
+                                <span class="card-title">🗓️ Mis Visitas</span>
+                                <button class="btn btn-outline btn-sm" onclick="toggleMisVisitas()">✕ Cerrar</button>
+                            </div>
+                            <div id="contenidoMisVisitas">
+                                <div class="empty">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Catálogo de Plantas -->
+                    <div id="panelCatalogo" style="display:none; margin-top: 20px;">
+                        <div class="card">
+                            <div class="card-head">
+                                <span class="card-title">🌿 Catálogo de Plantas</span>
+                                <button class="btn btn-outline btn-sm" onclick="toggleCatalogo()">✕ Cerrar</button>
+                            </div>
+                            <div id="contenidoCatalogo" style="padding: 16px;">
+                                <div class="empty">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 24px; padding: 20px;">
+                        <div style="font-weight: 600; margin-bottom: 6px;">¿Necesitás ayuda?</div>
+                        <p style="color: var(--gris); font-size: 13px; margin: 0;">
+                            Contactanos para más información sobre nuestros productos y servicios del vivero.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            const ctxBase = /*[[@{/}]]*/ '/';
+            let panelVisitasAbierto = false;
+            let panelCatalogoAbierto = false;
+
+            // ── Visitas ──────────────────────────────────────────
+            function formatFecha(fecha) {
+                if (!fecha) return '—';
+                const [y, mo, d] = fecha.split('-');
+                return d + '/' + mo + '/' + y;
+            }
+
+            function estadoClass(estado) {
+                if (estado === 'Confirmada') return 'badge badge-green';
+                if (estado === 'Cancelada')  return 'badge badge-gray';
+                return 'badge badge-pendiente';
+            }
+
+            function cargarMisVisitas() {
+                const contenido = document.getElementById('contenidoMisVisitas');
+                contenido.innerHTML = '<div class="empty">Cargando...</div>';
+                fetch(ctxBase + 'visitas/misVisitas')
+                    .then(r => r.json())
+                    .then(lista => {
+                        if (!lista || lista.length === 0) {
+                            contenido.innerHTML = '<div class="empty" style="padding:16px;">No tenés visitas registradas aún.</div>'
+                                + '<div style="padding:12px 16px;">'
+                                + '<a href="' + ctxBase + 'visitas/add" class="btn btn-primary btn-sm">+ Solicitar nueva visita</a>'
+                                + '</div>';
+                            return;
+                        }
+                        let html = '<table><thead><tr>'
+                            + '<th>Administrador</th><th>Fecha</th><th>Motivo</th><th>Personas</th><th>Estado</th>'
+                            + '</tr></thead><tbody>';
+                        lista.forEach(v => {
+                            const adminNombre = (v.adminNombre && v.adminNombre !== 'Desconocido') ? v.adminNombre : '—';
+                            html += '<tr>'
+                                + '<td>' + adminNombre + '</td>'
+                                + '<td>' + formatFecha(v.fechaVisita) + '</td>'
+                                + '<td>' + (v.motivoVisita || '') + '</td>'
+                                + '<td>' + v.cantidadPersonas + '</td>'
+                                + '<td><span class="' + estadoClass(v.estado) + '">' + v.estado + '</span></td>'
+                                + '</tr>';
+                        });
+                        html += '</tbody></table>';
+                        html += '<div style="padding:12px 16px;"><a href="' + ctxBase + 'visitas/add" class="btn btn-primary btn-sm">+ Solicitar nueva visita</a></div>';
+                        contenido.innerHTML = html;
+                    })
+                    .catch(() => {
+                        contenido.innerHTML = '<div class="empty">Error al cargar las visitas.</div>';
+                    });
+            }
+
+            function toggleMisVisitas() {
+                const panel  = document.getElementById('panelMisVisitas');
+                const flecha = document.getElementById('flechaMisVisitas');
+                panelVisitasAbierto = !panelVisitasAbierto;
+                panel.style.display  = panelVisitasAbierto ? 'block' : 'none';
+                flecha.textContent   = panelVisitasAbierto ? '⌄' : '›';
+                if (panelVisitasAbierto) cargarMisVisitas();
+            }
+
+            // ── Catálogo ─────────────────────────────────────────
+            function cargarCatalogo() {
+                const contenido = document.getElementById('contenidoCatalogo');
+                contenido.innerHTML = '<div class="empty">Cargando...</div>';
+                fetch(ctxBase + 'plantas/catalogo')
+                    .then(r => r.json())
+                    .then(plantas => {
+                        if (!plantas || plantas.length === 0) {
+                            contenido.innerHTML = '<div class="empty" style="padding:16px;">No hay plantas disponibles en este momento.</div>';
+                            return;
+                        }
+                        let html = '<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:16px; padding:8px 0;">';
+                        plantas.forEach(p => {
+                            const imgSrc = p.tieneImagen
+                                ? ctxBase + 'plantas/imagen/' + p.id
+                                : null;
+                            html += '<div style="border:1px solid var(--borde,#e2e8f0); border-radius:10px; overflow:hidden; background:var(--fondo-card,#fff);">';
+                            if (imgSrc) {
+                                html += '<img src="' + imgSrc + '" alt="' + p.nombreComun + '" style="width:100%; height:140px; object-fit:cover;">';
+                            } else {
+                                html += '<div style="width:100%; height:140px; display:flex; align-items:center; justify-content:center; font-size:48px; background:#f1f5f0;">🌱</div>';
+                            }
+                            html += '<div style="padding:10px 12px;">'
+                                + '<div style="font-weight:600; font-size:14px;">' + p.nombreComun + '</div>'
+                                + '<div style="font-size:12px; color:var(--gris); font-style:italic; margin-bottom:4px;">' + p.nombreCientifico + '</div>'
+                                + '<div style="font-size:12px; color:var(--gris); margin-bottom:6px;">Tipo: ' + p.tipo + '</div>'
+                                + '<div style="font-weight:600; color:#16a34a; font-size:15px;">₡' + p.precio.toLocaleString('es-CR') + '</div>'
+                                + '<div style="font-size:11px; color:var(--gris); margin-top:2px;">Stock: ' + p.cantidad + ' unidades</div>'
+                                + '</div></div>';
+                        });
+                        html += '</div>';
+                        contenido.innerHTML = html;
+                    })
+                    .catch(() => {
+                        contenido.innerHTML = '<div class="empty">Error al cargar el catálogo.</div>';
+                    });
+            }
+
+            function toggleCatalogo() {
+                const panel  = document.getElementById('panelCatalogo');
+                const flecha = document.getElementById('flechaCatalogo');
+                panelCatalogoAbierto = !panelCatalogoAbierto;
+                panel.style.display  = panelCatalogoAbierto ? 'block' : 'none';
+                flecha.textContent   = panelCatalogoAbierto ? '⌄' : '›';
+                if (panelCatalogoAbierto) cargarCatalogo();
+            }
+        </script>
+    </body>
+</html>

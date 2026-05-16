@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Empaques</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('empaques')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now">Empaques</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/empaques/agregar}" class="btn btn-primary btn-sm">+ Agregar Empaque</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div class="page-title">Gestión de Empaques</div>
+                    </div>
+
+                    <div th:if="${mensajeUso}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <span th:text="${mensajeUso}"></span>
+                    </div>
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <span th:text="${error}"></span>
+                    </div>
+                    <div th:if="${exito}" class="alert alert-ok">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z"/>
+                        </svg>
+                        <span th:text="${exito}"></span>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat"><div class="stat-num" th:text="${totalEmpaques}">0</div><div class="stat-label">Total de Empaques</div></div>
+                        <div class="stat"><div class="stat-num" th:text="${totalActivos}">0</div><div class="stat-label">Empaques Activos</div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de empaques</span>
+                            <div class="filters">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaEmpaques" placeholder="Buscar por tipo o descripción..."/>
+                                </div>
+                                <select id="selectActivoEmpaques" class="filter-select">
+                                    <option value="">Todos</option>
+                                    <option value="si">Activos</option>
+                                    <option value="no">Inactivos</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr><th>Tipo</th><th>Descripción</th><th>Cant. Plantas</th><th>Unidad</th><th>Stock</th><th>Costo Unit.</th><th>Activo</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody id="cuerpoTablaEmpaques">
+                                <tr th:if="${#lists.isEmpty(empaques)}"><td colspan="8"><div class="empty">No hay empaques registrados.</div></td></tr>
+                                <tr th:each="e : ${empaques}"
+                                    th:attr="data-busqueda=${e.tipo + ' ' + e.descripcion},
+                                             data-activo=${e.activo ? 'si' : 'no'}">
+                                    <td th:text="${e.tipo}"></td>
+                                    <td th:text="${e.descripcion}"></td>
+                                    <td th:text="${e.cantidadPlanta}"></td>
+                                    <td th:text="${e.unidadMedida}"></td>
+                                    <td th:text="${e.stock}"></td>
+                                    <td th:text="'₡' + ${#numbers.formatDecimal(e.costoUnitario, 1, 'COMMA', 0, 'POINT')}"></td>
+                                    <td><span th:if="${e.activo}" class="badge badge-green">Sí</span><span th:unless="${e.activo}" class="badge badge-gray">No</span></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/empaques/edit(id=${e.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:href="@{/empaques/delete(id=${e.id})}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este empaque?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <span id="contadorEmpaques"></span>
+                            <div class="pag-nav" id="paginacionEmpaques"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTablaEmpaques', 'paginacionEmpaques', 'contadorEmpaques', 10);
+            activarFiltrosConSelect('inputBusquedaEmpaques', 'selectActivoEmpaques', 'cuerpoTablaEmpaques');
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

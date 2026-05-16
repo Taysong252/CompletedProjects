@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>GreenHarmony · Catálogo</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+        <style>
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.45);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+            }
+            .modal-overlay.open {
+                display: flex;
+            }
+            .modal {
+                background: var(--fondo-card, #fff);
+                border-radius: 14px;
+                padding: 28px 28px 24px;
+                width: 100%;
+                max-width: 440px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+                position: relative;
+                animation: modalIn .18s ease;
+            }
+            @keyframes modalIn {
+                from {
+                    transform: translateY(16px);
+                    opacity: 0;
+                }
+                to   {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            .modal-close {
+                position: absolute;
+                top: 14px;
+                right: 16px;
+                background: none;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                color: var(--gris, #888);
+                line-height: 1;
+            }
+            .modal-close:hover {
+                color: #333;
+            }
+            .modal-title {
+                font-size: 17px;
+                font-weight: 700;
+                margin-bottom: 4px;
+            }
+            .modal-sub {
+                font-size: 12px;
+                color: var(--gris, #888);
+                font-style: italic;
+                margin-bottom: 18px;
+            }
+            .modal label {
+                display: block;
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 5px;
+                margin-top: 14px;
+            }
+            .modal label:first-of-type {
+                margin-top: 0;
+            }
+            .modal select,
+            .modal input[type="number"] {
+                width: 100%;
+                padding: 9px 12px;
+                border: 1px solid var(--borde, #ddd);
+                border-radius: 8px;
+                font-size: 14px;
+                background: var(--fondo, #fafafa);
+                color: inherit;
+                box-sizing: border-box;
+            }
+            .modal-resumen {
+                margin-top: 18px;
+                background: var(--verde-fondo, #f0faf4);
+                border: 1px solid var(--borde, #d4edda);
+                border-radius: 10px;
+                padding: 14px 16px;
+                font-size: 13px;
+            }
+            .modal-resumen-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 3px 0;
+            }
+            .modal-resumen-row.total {
+                font-weight: 700;
+                font-size: 15px;
+                border-top: 1px solid var(--borde, #ccc);
+                margin-top: 8px;
+                padding-top: 8px;
+                color: #16a34a;
+            }
+            .modal-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 22px;
+            }
+            .modal-actions .btn {
+                flex: 1;
+            }
+
+            .toast {
+                position: fixed;
+                bottom: 28px;
+                right: 28px;
+                background: #16a34a;
+                color: #fff;
+                padding: 13px 20px;
+                border-radius: 10px;
+                font-size: 14px;
+                font-weight: 600;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                z-index: 2000;
+                display: none;
+                animation: toastIn .22s ease;
+            }
+            .toast.error {
+                background: #dc2626;
+            }
+            @keyframes toastIn {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to   {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .planta-card {
+                border: 1px solid var(--borde, #e2e8f0);
+                border-radius: 12px;
+                overflow: hidden;
+                background: var(--fondo-card, #fff);
+                transition: box-shadow .2s, transform .2s;
+            }
+            .planta-card:hover {
+                box-shadow: 0 8px 28px rgba(0,0,0,0.10);
+                transform: translateY(-3px);
+            }
+            .planta-card .comprar-btn {
+                display: block;
+                width: 100%;
+                margin-top: 10px;
+                padding: 9px 0;
+                background: #16a34a;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background .15s;
+            }
+            .planta-card .comprar-btn:hover  {
+                background: #15803d;
+            }
+            .planta-card .comprar-btn:disabled {
+                background: #9ca3af;
+                cursor: not-allowed;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebarCliente('catalogo')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <span class="crumb-now">Catálogo de Plantas</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/logout}" class="btn btn-outline btn-sm">🚪 Cerrar sesión</a>
+                    </div>
+                </header>
+
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">🌿 Catálogo de Plantas</div>
+                            <div class="page-sub">Plantas ornamentales disponibles en nuestro vivero</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok" style="margin-bottom:16px;">
+                        ✅ <span th:text="${exito}"></span>
+                    </div>
+                    <div th:if="${error}" class="alert alert-error" style="margin-bottom:16px;">
+                        ⚠️ <span th:text="${error}"></span>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(plantas)}" class="empty" style="padding:32px;">
+                        No hay plantas disponibles en este momento.
+                    </div>
+
+                    <!-- Grid de plantas -->
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap:20px;"
+                         th:unless="${#lists.isEmpty(plantas)}">
+
+                        <div th:each="p : ${plantas}" class="planta-card">
+
+                            <!-- Imagen -->
+                            <div style="height:160px; overflow:hidden; background:#f1f5f0;">
+                                <img th:if="${p.datosImagen != null}"
+                                     th:src="@{'/plantas/imagen/' + ${p.id}}"
+                                     th:alt="${p.nombreComun}"
+                                     style="width:100%; height:100%; object-fit:cover;">
+                                <div th:unless="${p.datosImagen != null}"
+                                     style="width:100%; height:100%; display:flex; align-items:center;
+                                     justify-content:center; font-size:48px;">🌱</div>
+                            </div>
+                            <div style="padding:12px 14px;">
+                                <div style="font-weight:600; font-size:15px; margin-bottom:2px;"
+                                     th:text="${p.nombreComun}"></div>
+                                <div style="font-size:12px; color:var(--gris); font-style:italic; margin-bottom:6px;"
+                                     th:text="${p.nombreCientifico}"></div>
+                                <div style="font-size:12px; color:var(--gris); margin-bottom:8px;">
+                                    <span th:text="'Tipo: ' + ${p.tipo}"></span> ·
+                                    <span th:text="${p.requiereSol} ? '☀️ Sol' : '🌥️ Sombra'"></span>
+                                </div>
+                                <div style="font-weight:700; color:#16a34a; font-size:16px;"
+                                     th:text="'₡' + ${#numbers.formatDecimal(p.precio, 1, 'COMMA', 0, 'POINT')}"></div>
+                                <div style="font-size:11px; color:var(--gris); margin-top:3px;"
+                                     th:text="'Disponibles: ' + ${p.cantidad} + ' unidades'"></div>
+                                <div th:if="${p.descripcionCuidados != null and !p.descripcionCuidados.isEmpty()}"
+                                     style="margin-top:8px; font-size:12px; color:var(--gris);
+                                     border-top:1px solid var(--borde,#e2e8f0); padding-top:8px;"
+                                     th:text="${p.descripcionCuidados}"></div>
+
+                                <button th:if="${p.cantidad > 0}"
+                                        class="comprar-btn"
+                                        th:attr="onclick='abrirModal(' + ${p.id} + ',\'' + ${p.nombreComun} + '\',' + ${p.precio} + ',' + ${p.cantidad} + ')'">
+                                    🛒 Comprar
+                                </button>
+                                <button th:unless="${p.cantidad > 0}"
+                                        class="comprar-btn" disabled>
+                                    Sin stock
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalOverlay" onclick="cerrarModalSiAfuera(event)">
+            <div class="modal" id="modalCompra">
+                <button class="modal-close" onclick="cerrarModal()">✕</button>
+
+                <div class="modal-title" id="modalNombrePlanta">Planta</div>
+                <div class="modal-sub" id="modalSubPlanta">Completa los datos de tu compra</div>
+
+                <form id="formCompra" th:action="@{/ventas/compraCliente}" method="post">
+                    <input type="hidden" id="plantaId"  name="plantaId"/>
+                    <input type="hidden" id="subtotalH" name="subtotal"/>
+
+                    <label for="cantidad">Cantidad</label>
+                    <input type="number" id="cantidad" name="cantidad"
+                           min="1" value="1" oninput="actualizarResumen()"/>
+
+                    <label for="adminId">Administrador</label>
+                    <select id="adminId" name="adminId" required>
+                        <option value="">— Seleccione un administrador —</option>
+                        <option th:each="a : ${admins}"
+                                th:value="${a.id}"
+                                th:text="${a.nombre + ' ' + a.apellido}"></option>
+                    </select>
+
+                    <label for="metodoPago">Método de pago</label>
+                    <select id="metodoPago" name="metodoPago" required>
+                        <option value="">— Seleccione —</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+
+                    <label for="codigoPromo">Código promocional <span style="font-weight:400;color:#888;">(opcional)</span></label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="codigoPromo" name="codigoPromo"
+                               placeholder="Ej: VERANO20"
+                               style="text-transform:uppercase; flex:1;
+                               padding:9px 12px; border:1px solid var(--borde,#ddd);
+                               border-radius:8px; font-size:14px;
+                               background:var(--fondo,#fafafa); box-sizing:border-box;"/>
+                    </div>
+
+                    <div class="modal-resumen">
+                        <div class="modal-resumen-row">
+                            <span>Subtotal</span>
+                            <span id="rSubtotal">₡0</span>
+                        </div>
+                        <div class="modal-resumen-row">
+                            <span>IVA (13%)</span>
+                            <span id="rIva">₡0</span>
+                        </div>
+                        <div class="modal-resumen-row total">
+                            <span>Total estimado</span>
+                            <span id="rTotal">₡0</span>
+                        </div>
+                    </div>
+
+                    <p style="font-size:11px; color:var(--gris,#888); margin:10px 0 0;">
+                        * El descuento por promoción se aplicará al confirmar si el código es válido.
+                    </p>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Confirmar compra</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+        <script th:inline="javascript">
+            let _precioPorUnidad = 0;
+            let _stockMax = 0;
+
+            function abrirModal(id, nombre, precio, stock) {
+                _precioPorUnidad = precio;
+                _stockMax = stock;
+
+                document.getElementById('plantaId').value = id;
+                document.getElementById('modalNombrePlanta').textContent = nombre;
+                document.getElementById('modalSubPlanta').textContent =
+                        'Precio unitario: ₡' + precio.toLocaleString('es-CR');
+                document.getElementById('cantidad').value = 1;
+                document.getElementById('cantidad').max = stock;
+                document.getElementById('adminId').value = '';
+                document.getElementById('metodoPago').value = '';
+                document.getElementById('codigoPromo').value = '';
+                actualizarResumen();
+                document.getElementById('modalOverlay').classList.add('open');
+            }
+
+            function cerrarModal() {
+                document.getElementById('modalOverlay').classList.remove('open');
+            }
+
+            function cerrarModalSiAfuera(e) {
+                if (e.target === document.getElementById('modalOverlay'))
+                    cerrarModal();
+            }
+
+            function actualizarResumen() {
+                const cant = Math.max(1, parseInt(document.getElementById('cantidad').value) || 1);
+                const sub = _precioPorUnidad * cant;
+                const iva = Math.round(sub * 0.13 * 100) / 100;
+                const tot = Math.round((sub + iva) * 100) / 100;
+
+                document.getElementById('subtotalH').value = sub.toFixed(2);
+                document.getElementById('rSubtotal').textContent = '₡' + sub.toLocaleString('es-CR', {minimumFractionDigits: 2});
+                document.getElementById('rIva').textContent = '₡' + iva.toLocaleString('es-CR', {minimumFractionDigits: 2});
+                document.getElementById('rTotal').textContent = '₡' + tot.toLocaleString('es-CR', {minimumFractionDigits: 2});
+            }
+
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape')
+                    cerrarModal();
+            });
+
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(el => {
+                    el.style.transition = 'opacity .5s';
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 500);
+                });
+            }, 3500);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Panel Admin</title>
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('inicio')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb-now">Panel Administrador</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/logout}" class="btn btn-outline btn-sm">🚪 Cerrar sesión</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">
+                                Bienvenido, <span th:text="${session.usuarioActivo?.nombre} ?: 'Administrador'">Admin</span>
+                            </div>
+                            <div class="page-sub">Panel de gestión completa del vivero GreenHarmony</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok">✅ <span th:text="${exito}"></span></div>
+                    <div th:if="${error}" class="alert alert-error">⚠️ <span th:text="${error}"></span></div>
+
+                    <div class="dashboard-grid">
+
+                        <a th:href="@{/plantas/}" class="dash-card">
+                            <div class="dash-icon">🌿</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Plantas</div>
+                                <div class="dash-desc">Catálogo e inventario de plantas</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/cultivos/}" class="dash-card">
+                            <div class="dash-icon">🌱</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Cultivos</div>
+                                <div class="dash-desc">Seguimiento de cultivos</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/insumos/}" class="dash-card">
+                            <div class="dash-icon">🧪</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Insumos</div>
+                                <div class="dash-desc">Inventario de insumos</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+
+                        <a th:href="@{/usuarios/}" class="dash-card">
+                            <div class="dash-icon">👥</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Usuarios</div>
+                                <div class="dash-desc">Clientes y administradores</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/compras/}" class="dash-card">
+                            <div class="dash-icon">🛒</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Compras</div>
+                                <div class="dash-desc">Registro de compras</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/ventas/}" class="dash-card">
+                            <div class="dash-icon">💰</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Ventas</div>
+                                <div class="dash-desc">Historial de ventas</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/visitas/}" class="dash-card">
+                            <div class="dash-icon">📅</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Visitas</div>
+                                <div class="dash-desc">Agenda de visitas</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/entregas/}" class="dash-card">
+                            <div class="dash-icon">🚚</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Entregas</div>
+                                <div class="dash-desc">Control de entregas</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/quejas/}" class="dash-card">
+                            <div class="dash-icon">📋</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Quejas y Sugerencias</div>
+                                <div class="dash-desc">Gestión de quejas de clientes</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+
+                        <a th:href="@{/promociones/}" class="dash-card">
+                            <div class="dash-icon">🏷️</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Promociones</div>
+                                <div class="dash-desc">Descuentos activos</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/empaques/}" class="dash-card">
+                            <div class="dash-icon">📦</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Empaques</div>
+                                <div class="dash-desc">Stock de empaques</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/zonas/}" class="dash-card">
+                            <div class="dash-icon">🗺️</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Zonas</div>
+                                <div class="dash-desc">Zonas del vivero</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+                        <a th:href="@{/tareas/}" class="dash-card">
+                            <div class="dash-icon">✅</div>
+                            <div class="dash-info">
+                                <div class="dash-name">Tareas</div>
+                                <div class="dash-desc">Seguimiento de tareas</div>
+                            </div>
+                            <div class="dash-arrow">›</div>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

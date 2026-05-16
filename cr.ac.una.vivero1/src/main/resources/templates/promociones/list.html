@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Promociones</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+
+            <!-- SIDEBAR DINÁMICO -->
+            <th:block th:if="${esCliente != null and esCliente}">
+                <aside th:replace="~{fragmentos :: sidebarCliente('promociones')}"></aside>
+            </th:block>
+            <th:block th:if="${esCliente == null or !esCliente}">
+                <aside th:replace="~{fragmentos :: sidebar('promociones')}"></aside>
+            </th:block>
+
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now">Promociones</span>
+                    <!-- BOTÓN SOLO ADMIN -->
+                    <div class="topbar-right" th:if="${esCliente == null or !esCliente}">
+                        <a th:href="@{/promociones/agregar}" class="btn btn-primary btn-sm">+ Agregar Promoción</a>
+                    </div>
+                </header>
+
+                <div class="page">
+                    <div class="page-header">
+                        <div class="page-title">Gestión de Promociones</div>
+                    </div>
+
+                    <!-- ALERTAS -->
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <span th:text="${error}"></span>
+                    </div>
+                    <div th:if="${exito}" class="alert alert-ok">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z"/>
+                        </svg>
+                        <span th:text="${exito}"></span>
+                    </div>
+
+                    <!-- STATS SOLO ADMIN -->
+                    <div class="stats" th:if="${esCliente == null or !esCliente}">
+                        <div class="stat"><div class="stat-num" th:text="${totalPromociones}">0</div><div class="stat-label">Total de Promociones</div></div>
+                        <div class="stat"><div class="stat-num" th:text="${totalActivas}">0</div><div class="stat-label">Promociones Activas</div></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de promociones</span>
+                            <div class="filters">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaPromociones" placeholder="Buscar por nombre, descripción o código..."/>
+                                </div>
+                                <!-- SELECT SOLO ADMIN -->
+                                <select th:if="${esCliente == null or !esCliente}" id="selectActivoPromociones" class="filter-select">
+                                    <option value="">Todas</option>
+                                    <option value="si">Activas</option>
+                                    <option value="no">Inactivas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Descuento %</th>
+                                    <th>Monto Mínimo</th>
+                                    <th>Código</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Fecha Fin</th>
+                                    <th>Activa</th>
+                                    <!-- COLUMNA ACCIONES SOLO ADMIN -->
+                                    <th th:if="${esCliente == null or !esCliente}">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaPromociones">
+                                <tr th:if="${#lists.isEmpty(promociones)}">
+                                    <td colspan="9"><div class="empty">No hay promociones registradas.</div></td>
+                                </tr>
+                                <!-- CLIENTES SOLO VEN ACTIVAS -->
+                                <tr th:each="p : ${promociones}"
+                                    th:if="${esCliente == null or !esCliente or p.activa}"
+                                    th:attr="data-busqueda=${p.nombrePromocion + ' ' + p.descripcion + ' ' + p.codigoPromo},
+                                             data-activo=${p.activa ? 'si' : 'no'}">
+                                    <td th:text="${p.nombrePromocion}"></td>
+                                    <td th:text="${p.descripcion}"></td>
+                                    <td th:text="${p.descuentoPorcentaje} + '%'"></td>
+                                    <td th:text="'₡' + ${#numbers.formatDecimal(p.montoMinimo, 1, 'COMMA', 0, 'POINT')}"></td>
+                                    <td th:text="${p.codigoPromo}"></td>
+                                    <td th:text="${#temporals.format(p.fechaInicio, 'dd-MM-yyyy')}"></td>
+                                    <td th:text="${#temporals.format(p.fechaFin, 'dd-MM-yyyy')}"></td>
+                                    <td>
+                                        <span th:if="${p.activa}" class="badge badge-green">Sí</span>
+                                        <span th:unless="${p.activa}" class="badge badge-gray">No</span>
+                                    </td>
+                                    <!-- ACCIONES SOLO ADMIN -->
+                                    <td th:if="${esCliente == null or !esCliente}">
+                                        <div class="btn-group">
+                                            <a th:href="@{/promociones/edit(id=${p.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:href="@{/promociones/delete(id=${p.id})}" class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Eliminar esta promocion?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <span id="contadorPromociones"></span>
+                            <div class="pag-nav" id="paginacionPromociones"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTablaPromociones', 'paginacionPromociones', 'contadorPromociones', 10);
+            activarFiltrosConSelect('inputBusquedaPromociones', 'selectActivoPromociones', 'cuerpoTablaPromociones');
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

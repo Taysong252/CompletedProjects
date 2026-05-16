@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <title>Visitas - GreenHarmony</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+
+            <th:block th:if="${esCliente != null and esCliente}">
+                <aside th:replace="~{fragmentos :: sidebarCliente('visitas')}"></aside>
+            </th:block>
+            <th:block th:if="${esCliente == null or !esCliente}">
+                <aside th:replace="~{fragmentos :: sidebar('visitas')}"></aside>
+            </th:block>
+
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${esCliente != null and esCliente} ? 'Mis Visitas' : 'Visitas'"></span>
+                    <div class="topbar-right">
+                        <a th:href="@{/visitas/add}" class="btn btn-primary btn-sm"
+                           th:text="${esCliente != null and esCliente} ? '+ Solicitar Visita' : '+ Agendar Visita'">
+                        </a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title" th:text="${esCliente != null and esCliente} ? 'Mis Visitas' : 'Agenda de Visitas'"></div>
+                            <div class="page-sub" th:text="${esCliente != null and esCliente} ? 'Acá podés ver el estado de tus solicitudes de visita.' : 'Administra las visitas agendadas al vivero'"></div>
+                        </div>
+                    </div>
+                    <div th:if="${exito}" class="alert alert-ok">✅ <span th:text="${exito}"></span></div>
+                    <input type="hidden" id="esCliente" th:value="${esCliente}"/>
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title" th:text="${esCliente != null and esCliente} ? 'Mis solicitudes' : 'Lista de visitas'"></span>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" id="inputBusqueda" class="input" style="width:200px;" placeholder="Buscar por motivo..."/>
+                                <select id="selectEstado" class="input" style="width:150px;">
+                                    <option value="">Todos los estados</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Confirmada">Confirmada</option>
+                                    <option value="Cancelada">Cancelada</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th th:if="${esCliente == null or !esCliente}">Cliente</th>
+                                    <th>Administrador</th>
+                                    <th style="min-width:110px;">Fecha</th>
+                                    <th th:if="${esCliente == null or !esCliente}" style="min-width:160px;">Horario</th>
+                                    <th>Motivo</th>
+                                    <th>Personas</th>
+                                    <th>Estado</th>
+                                    <th th:if="${esCliente == null or !esCliente}">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaVisitas">
+                                <tr th:each="v : ${visitas}">
+                                    <td th:if="${esCliente == null or !esCliente}" th:text="${v.clienteNombre}"></td>
+                                    <td th:text="${v.adminNombre != null and v.adminNombre != 'Desconocido'} ? ${v.adminNombre} : '—'"></td>
+                                    <td th:text="${#temporals.format(v.fechaVisita, 'dd/MM/yyyy')}"></td>
+                                    <td th:if="${esCliente == null or !esCliente}"
+                                        th:text="${v.horaInicio != null} ? (${#temporals.format(v.horaInicio, 'hh:mm a')} + ' – ' + ${#temporals.format(v.horaFin, 'hh:mm a')}) : '—'">
+                                    </td>
+                                    <td th:text="${v.motivoVisita}"></td>
+                                    <td th:text="${v.cantidadPersonas}"></td>
+                                    <td>
+                                        <span th:text="${v.estado}"
+                                              th:class="${v.estado == 'Confirmada'} ? 'badge badge-green'
+                                              : (${v.estado == 'Cancelada'} ? 'badge badge-gray'
+                                              : 'badge badge-pendiente')">
+                                        </span>
+                                    </td>
+                                    <td th:if="${esCliente == null or !esCliente}">
+                                        <div class="btn-group">
+                                            <a th:href="@{/visitas/update(id=${v.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:href="@{/visitas/delete(id=${v.id})}" class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Eliminar esta visita?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(visitas)}">
+                                    <td colspan="8">
+                                        <div class="empty" th:text="${esCliente != null and esCliente} ? 'No tenés visitas registradas.' : 'No hay visitas agendadas.'"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <span id="contadorVisitas"></span>
+                            <div class="pag-nav" id="paginacionVisitas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            initVisitas();
+        </script>
+    </body>
+</html>

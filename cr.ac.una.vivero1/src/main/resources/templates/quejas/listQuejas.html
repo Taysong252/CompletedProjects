@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Quejas</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('quejas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now">Quejas y Sugerencias</span>
+                </header>
+
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Quejas y Sugerencias</div>
+                            <div class="page-sub">Seguimiento de quejas, sugerencias y resoluciones</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                        <span th:text="${exito}"></span>
+                    </div>
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stats" style="grid-template-columns: repeat(3,1fr);">
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalQuejas}">0</div>
+                            <div class="stat-label">Total registradas</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalPendientes}">0</div>
+                            <div class="stat-label">Pendientes</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalResueltas}">0</div>
+                            <div class="stat-label">Resueltas</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de quejas y sugerencias</span>
+                            <div class="filters">
+                                <!-- Búsqueda en vivo por código, descripción o categoría -->
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaQuejas"
+                                           placeholder="Buscar por código o categoría..."/>
+                                </div>
+                                <!-- Filtro 1: estado -->
+                                <select id="selectEstadoQuejas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:13px;">
+                                    <option value="">Todos los estados</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="En proceso">En proceso</option>
+                                    <option value="Resuelta">Resuelta</option>
+                                </select>
+                                <!-- Filtro 2: tipo -->
+                                <select id="selectTipoQuejas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:13px;">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="Queja">Quejas</option>
+                                    <option value="Sugerencia">Sugerencias</option>
+                                </select>
+                                <a th:href="@{/quejas/}" class="btn btn-outline btn-sm">Ver todas</a>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Cliente</th>
+                                    <th>Tipo</th>
+                                    <th>Categoría</th>
+                                    <th>Descripción</th>
+                                    <th>Administrador</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaQuejas">
+                                <tr th:if="${quejas == null or quejas.empty}">
+                                    <td colspan="9"><div class="empty">No hay quejas registradas.</div></td>
+                                </tr>
+                                <tr th:each="q : ${quejas}"
+                                    th:attr="data-busqueda=${q.codigoQueja + ' ' + q.categoria + ' ' + q.descripcion},
+                                    data-activo=${q.estado},
+                                    data-tipo=${q.tipoRegistro}">
+                                    <td>
+                                        <span class="badge badge-blue" th:text="${q.codigoQueja}"></span>
+                                    </td>
+                                    <td th:text="${q.cliente != null ? q.cliente.nombre + ' ' + q.cliente.apellido : '—'}"></td>
+                                    <td>
+                                        <span th:text="${q.tipoRegistro}"
+                                              th:class="${q.tipoRegistro == 'Queja'} ? 'badge badge-gray' : 'badge badge-green'">
+                                        </span>
+                                    </td>
+                                    <td th:text="${q.categoria}"></td>
+                                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                        th:text="${q.descripcion}" th:title="${q.descripcion}"></td>
+                                    <td th:text="${q.admin != null ? q.admin.nombre + ' ' + q.admin.apellido : '—'}"></td>
+                                    <td th:text="${#temporals.format(q.fechaRegistro, 'dd/MM/yyyy')}"></td>
+                                    <td>
+                                        <span th:text="${q.estado}"
+                                              th:class="${q.estado == 'Resuelta'} ? 'badge badge-green' :
+                                              (${q.estado == 'En proceso'} ? 'badge badge-blue' : 'badge badge-gray')">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/quejas/editar(id=${q.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:href="@{/quejas/eliminar(id=${q.id})}"
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Eliminar esta queja?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <span id="contadorQuejas"></span>
+                            <div class="pag-nav" id="paginacionQuejas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTablaQuejas', 'paginacionQuejas', 'contadorQuejas', 10);
+            ocultarAlertas();
+
+            // Filtros combinados: búsqueda + estado + tipo
+            const inputBusqQ = document.getElementById('inputBusquedaQuejas');
+            const selEstadoQ = document.getElementById('selectEstadoQuejas');
+            const selTipoQ = document.getElementById('selectTipoQuejas');
+            const tbodyQ = document.getElementById('cuerpoTablaQuejas');
+
+            function aplicarFiltrosQuejas() {
+                const texto = (inputBusqQ?.value || '').toLowerCase().trim();
+                const estado = selEstadoQ?.value || '';
+                const tipo = selTipoQ?.value || '';
+
+                tbodyQ.querySelectorAll('tr').forEach(function (fila) {
+                    if (fila.querySelector('div.empty'))
+                        return;
+                    const coincideTexto = (fila.dataset.busqueda || '').toLowerCase().includes(texto);
+                    const coincideEstado = estado === '' || fila.dataset.activo === estado;
+                    const coincideTipo = tipo === '' || fila.dataset.tipo === tipo;
+                    fila.dataset.filtrada = (coincideTexto && coincideEstado && coincideTipo) ? 'true' : 'false';
+                });
+
+                if (window['_pag_cuerpoTablaQuejas'])
+                    window['_pag_cuerpoTablaQuejas'].ir(1);
+            }
+
+            inputBusqQ?.addEventListener('input', aplicarFiltrosQuejas);
+            selEstadoQ?.addEventListener('change', aplicarFiltrosQuejas);
+            selTipoQ?.addEventListener('change', aplicarFiltrosQuejas);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <title>Visita - GreenHarmony</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+
+            <th:block th:if="${esCliente != null and esCliente}">
+                <aside th:replace="~{fragmentos :: sidebarCliente('agendar')}"></aside>
+            </th:block>
+            <th:block th:if="${esCliente == null or !esCliente}">
+                <aside th:replace="~{fragmentos :: sidebar('visitas')}"></aside>
+            </th:block>
+
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/visitas/}" class="crumb">Visitas</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now"
+                          th:text="${visitaNew.id != 0} ? 'Editar Visita'
+                          : (${esCliente != null and esCliente} ? 'Solicitar Visita' : 'Agendar Visita')">
+                    </span>
+                    <div class="topbar-right">
+                        <a th:href="@{/visitas/}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title"
+                                 th:text="${visitaNew.id != 0} ? 'Editar Visita'
+                                 : (${esCliente != null and esCliente} ? 'Solicitar una Visita' : 'Agendar Visita')">
+                            </div>
+                            <div class="page-sub"
+                                 th:text="${esCliente != null and esCliente}
+                                 ? 'Completá los datos y un administrador confirmará tu visita.'
+                                 : 'Completa los datos de la visita'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${errorCliente}"  class="alert alert-error">⚠️ <span th:text="${errorCliente}"></span></div>
+                    <div th:if="${errorAdmin}"    class="alert alert-error">⚠️ <span th:text="${errorAdmin}"></span></div>
+                    <div th:if="${errorFecha}"    class="alert alert-error">⚠️ <span th:text="${errorFecha}"></span></div>
+                    <div th:if="${errorHoras}"    class="alert alert-error">⚠️ <span th:text="${errorHoras}"></span></div>
+                    <div th:if="${errorMotivo}"   class="alert alert-error">⚠️ <span th:text="${errorMotivo}"></span></div>
+                    <div th:if="${errorPersonas}" class="alert alert-error">⚠️ <span th:text="${errorPersonas}"></span></div>
+                    <div th:if="${error}"         class="alert alert-error">⚠️ <span th:text="${error}"></span></div>
+
+                    <div class="card" style="padding: 20px;">
+                        <form th:action="@{/visitas/save}" method="post" th:object="${visitaNew}">
+                            <input type="hidden" th:field="*{id}"/>
+
+                            <div class="field-grid">
+
+                                <!-- CAMPOS SOLO ADMIN -->
+                                <div class="field" th:if="${esCliente == null or !esCliente}">
+                                    <label>Cliente <span class="req">*</span></label>
+                                    <select class="input" th:field="*{clienteId}" required>
+                                        <option value="0">Seleccionar cliente</option>
+                                        <option th:each="c : ${clientes}"
+                                                th:value="${c[0]}"
+                                                th:text="${c[1]} + ' ' + ${c[2]}"
+                                                th:selected="${c[0] == visitaNew.clienteId}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="field" th:if="${esCliente == null or !esCliente}">
+                                    <label>Administrador <span class="req">*</span></label>
+                                    <select class="input" th:field="*{adminId}" required>
+                                        <option value="0">Seleccionar administrador</option>
+                                        <option th:each="a : ${administradores}"
+                                                th:value="${a[0]}"
+                                                th:text="${a[1]} + ' ' + ${a[2]}"
+                                                th:selected="${a[0] == visitaNew.adminId}"
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- CAMPOS COMUNES -->
+                            <div class="field">
+                                <label>Fecha de Visita <span class="req">*</span></label>
+                                <input class="input" type="date" th:field="*{fechaVisita}" required/>
+                            </div>
+
+                            <div class="field">
+                                <label>Cantidad de Personas <span class="req">*</span></label>
+                                <input class="input" type="number" th:field="*{cantidadPersonas}"
+                                       min="1" placeholder="1" required/>
+                            </div>
+
+                            <!-- HORAS SOLO ADMIN -->
+                            <div class="field" th:if="${esCliente == null or !esCliente}">
+                                <label>Hora de Inicio <span class="req">*</span></label>
+                                <input class="input" type="time" th:field="*{horaInicio}" required/>
+                            </div>
+
+                            <div class="field" th:if="${esCliente == null or !esCliente}">
+                                <label>Hora de Fin <span class="req">*</span></label>
+                                <input class="input" type="time" th:field="*{horaFin}" required/>
+                            </div>
+
+                            <!-- MOTIVO -->
+                            <div class="field" style="grid-column: span 2">
+                                <label>Motivo de la Visita <span class="req">*</span></label>
+                                <input class="input" type="text" th:field="*{motivoVisita}"
+                                       placeholder="Ej: Compra de plantas, tour guiado..." required/>
+                            </div>
+
+                            <!-- ESTADO SOLO ADMIN -->
+                            <div class="field" th:if="${esCliente == null or !esCliente}">
+                                <label>Estado</label>
+                                <select class="input" th:field="*{estado}">
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Confirmada">Confirmada</option>
+                                    <option value="Cancelada">Cancelada</option>
+                                </select>
+                            </div>
+
+                            <!-- OBSERVACIONES -->
+                            <div class="field" style="grid-column: span 2">
+                                <label>Observaciones</label>
+                                <textarea class="input" th:field="*{observaciones}"
+                                          placeholder="Notas adicionales sobre la visita..."></textarea>
+                            </div>
+
+                        </div>
+
+                        <div style="margin-top: 16px;">
+                            <button type="submit" class="btn btn-primary"
+                                    th:text="${visitaNew.id != 0} ? 'Guardar Cambios'
+                                    : (${esCliente != null and esCliente} ? 'Enviar Solicitud' : 'Agendar Visita')">
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

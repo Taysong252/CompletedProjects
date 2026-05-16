@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Tareas</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('tareas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now">Tareas</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/tareas/nuevo}" class="btn btn-primary btn-sm">+ Nueva tarea</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Gestión de Tareas</div>
+                            <div class="page-sub">Seguimiento de tareas de mantenimiento del vivero</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok" th:text="${exito}"></div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de tareas</span>
+                            <div class="filters">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaTareas"
+                                           placeholder="Buscar por prioridad o tipo..."/>
+                                </div>
+                                <select id="selectCompletadaTareas" class="input"
+                                        style="width:auto;padding:4px 8px;font-size:13px;">
+                                    <option value="">Todas</option>
+                                    <option value="si">Completadas</option>
+                                    <option value="no">Pendientes</option>
+                                </select>
+                                <a th:href="@{/tareas}" class="btn btn-outline btn-sm">Ver todas</a>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Planta</th>
+                                    <th>Administrador</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Fecha Programada</th>
+                                    <th>Prioridad</th>
+                                    <th>Estado</th>
+                                    <th>Observaciones</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaTareas">
+                                <tr th:if="${tareas == null or tareas.empty}">
+                                    <td colspan="9"><div class="empty">No hay tareas registradas.</div></td>
+                                </tr>
+                                <tr th:each="tarea : ${tareas}"
+                                    th:attr="data-busqueda=${tarea.prioridad + ' ' + tarea.tipoTarea},
+                                             data-activo=${tarea.completada ? 'si' : 'no'}">
+                                    <td th:text="${tarea.planta != null ? tarea.planta.nombreComun : '—'}"></td>
+                                    <td th:text="${tarea.empleado != null ? tarea.empleado.nombre + ' ' + tarea.empleado.apellido : '—'}"></td>
+                                    <td th:text="${tarea.tipoTarea}"></td>
+                                    <td th:text="${tarea.descripcion != null ? tarea.descripcion : '—'}"></td>
+                                    <td th:text="${#temporals.format(tarea.fechaProgramada, 'dd/MM/yyyy')}"></td>
+                                    <td th:text="${tarea.prioridad}"></td>
+                                    <td>
+                                        <span th:if="${tarea.completada}" class="badge badge-green">Completada</span>
+                                        <span th:unless="${tarea.completada}" class="badge badge-gray">Pendiente</span>
+                                    </td>
+                                    <td th:text="${tarea.observaciones != null ? tarea.observaciones : '—'}"></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/tareas/editar(id=${tarea.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:href="@{/tareas/eliminar(id=${tarea.id})}"
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Está seguro que desea eliminar esta tarea?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <span id="contadorTareas"></span>
+                            <div class="pag-nav" id="paginacionTareas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTablaTareas', 'paginacionTareas', 'contadorTareas', 10);
+            activarFiltrosConSelect('inputBusquedaTareas', 'selectCompletadaTareas', 'cuerpoTablaTareas');
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

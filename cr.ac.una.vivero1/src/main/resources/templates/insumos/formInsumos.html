@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <title>Insumo - GreenHarmony</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('insumos')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/insumos/}" class="crumb">Insumos</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${insumoNew.id != 0} ? 'Editar Insumo' : 'Nuevo Insumo'"></span>
+                    <div class="topbar-right">
+                        <a th:href="@{/insumos/}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title" th:text="${insumoNew.id != 0} ? 'Editar Insumo' : 'Nuevo Insumo'"></div>
+                            <div class="page-sub">Completa los datos del insumo</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${errorNombre}" class="alert alert-error">⚠️ <span th:text="${errorNombre}"></span></div>
+                    <div th:if="${errorCategoria}" class="alert alert-error">⚠️ <span th:text="${errorCategoria}"></span></div>
+                    <div th:if="${errorUnidadMedida}" class="alert alert-error">⚠️ <span th:text="${errorUnidadMedida}"></span></div>
+                    <div th:if="${errorStock}" class="alert alert-error">⚠️ <span th:text="${errorStock}"></span></div>
+                    <div th:if="${errorPrecio}" class="alert alert-error">⚠️ <span th:text="${errorPrecio}"></span></div>
+
+                    <div class="card" style="padding: 20px;">
+                        <form th:action="@{/insumos/save}" method="post" th:object="${insumoNew}">
+                            <input type="hidden" th:field="*{id}"/>
+
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Nombre del Insumo <span class="req">*</span></label>
+                                    <input class="input" type="text" th:field="*{nombreInsumo}"
+                                           placeholder="Ej: Fertilizante NPK" required/>
+                                </div>
+                                <div class="field">
+                                    <label>Categoría <span class="req">*</span></label>
+                                    <select class="input" th:field="*{categoria}" required>
+                                        <option value="">Seleccionar</option>
+                                        <option value="Fertilizante">Fertilizante</option>
+                                        <option value="Sustrato">Sustrato</option>
+                                        <option value="Pesticida">Pesticida</option>
+                                        <option value="Herramienta">Herramienta</option>
+                                        <option value="Empaque">Empaque</option>
+                                        <option value="Semilla">Semilla</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="field" style="grid-column: span 2">
+                                    <label>Descripción</label>
+                                    <textarea class="input" th:field="*{descripcion}"
+                                              placeholder="Descripción del insumo..."></textarea>
+                                </div>
+                                <div class="field">
+                                    <label>Cantidad en Stock <span class="req">*</span></label>
+                                    <input class="input" type="number" th:field="*{cantidadStock}" min="0" placeholder="0" required/>
+                                </div>
+                                <div class="field">
+                                    <label>Unidad de Medida <span class="req">*</span></label>
+                                    <select class="input" th:field="*{unidadMedida}" required>
+                                        <option value="">Seleccionar</option>
+                                        <option value="kg">Kilogramos (kg)</option>
+                                        <option value="g">Gramos (g)</option>
+                                        <option value="L">Litros (L)</option>
+                                        <option value="mL">Mililitros (mL)</option>
+                                        <option value="unidades">Unidades</option>
+                                        <option value="sacos">Sacos</option>
+                                        <option value="cajas">Cajas</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Stock Mínimo</label>
+                                    <input class="input" type="number" th:field="*{stockMinimo}" min="0" placeholder="0"/>
+                                </div>
+                                <div class="field">
+                                    <label>Precio Unitario (₡) <span class="req">*</span></label>
+                                    <input class="input" type="number" th:field="*{precioUnitario}"
+                                           step="0.01" min="0.01" placeholder="0.00" required/>
+                                </div>
+                                <div class="field">
+                                    <label>Fecha Última Compra</label>
+                                    <input class="input" type="date" th:field="*{fechaUltimaCompra}"/>
+                                </div>
+                                <div class="field" style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                                    <input type="checkbox" id="activoCheck" th:field="*{activo}"
+                                           style="width:18px; height:18px; cursor:pointer;"/>
+                                    <label for="activoCheck" style="margin:0; cursor:pointer;">Activo</label>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 16px;">
+                                <button type="submit" class="btn btn-primary"
+                                        th:text="${insumoNew.id != 0} ? 'Guardar Cambios' : 'Registrar Insumo'">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

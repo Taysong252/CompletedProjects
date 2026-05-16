@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Zonas</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('zonas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now">Zonas</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/zonas/add}" class="btn btn-primary btn-sm">+ Agregar zona</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div class="page-title" th:text="${title}">Gestión de Zonas</div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z"/></svg>
+                        <span th:text="${exito}"></span>
+                    </div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de zonas</span>
+                            <div class="filters">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaZonas"
+                                           placeholder="Buscar por nombre o tipo..."/>
+                                </div>
+                                <select id="selectActivaZonas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:13px;">
+                                    <option value="">Todas</option>
+                                    <option value="si">Activas</option>
+                                    <option value="no">Inactivas</option>
+                                </select>
+                                <a th:href="@{/zonas/}" class="btn btn-outline btn-sm">Ver todas</a>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Cap. Máxima</th>
+                                    <th>Cant. Actual</th>
+                                    <th>Temp. Prom. (°C)</th>
+                                    <th>Humedad Prom. (%)</th>
+                                    <th>Activa</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaZonas">
+                                <tr th:if="${#lists.isEmpty(zonas)}">
+                                    <td colspan="9"><div class="empty">No hay zonas registradas.</div></td>
+                                </tr>
+                                <tr th:each="zona : ${zonas}"
+                                    th:attr="data-busqueda=${zona.nombreZona + ' ' + zona.tipo},
+                                             data-activo=${zona.activa ? 'si' : 'no'}">
+                                    <td th:text="${zona.nombreZona}"></td>
+                                    <td th:text="${zona.tipo}"></td>
+                                    <td th:text="${zona.descripcion}"></td>
+                                    <td th:text="${zona.capacidadMaxima}"></td>
+                                    <td th:text="${zona.cantidadActual}"></td>
+                                    <td th:text="${zona.temperaturaPromedio}"></td>
+                                    <td th:text="${zona.humedadPromedio}"></td>
+                                    <td>
+                                        <span th:class="${zona.activa} ? 'badge badge-green' : 'badge badge-gray'"
+                                              th:text="${zona.activa} ? 'Sí' : 'No'"></span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/zonas/edit(id=${zona.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:href="@{/zonas/delete(id=${zona.id})}" class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Está seguro que desea eliminar esta zona?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <span id="contadorZonas"></span>
+                            <div class="pag-nav" id="paginacionZonas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTablaZonas', 'paginacionZonas', 'contadorZonas', 10);
+            activarFiltrosConSelect('inputBusquedaZonas', 'selectActivaZonas', 'cuerpoTablaZonas');
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

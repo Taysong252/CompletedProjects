@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Plantas</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('plantas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <span class="crumb-now">Plantas</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/plantas/nuevo}" class="btn btn-primary btn-sm">+ Nueva planta</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Gestión de Plantas</div>
+                            <div class="page-sub">Administra el inventario de plantas del vivero</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok" th:text="${exito}"></div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de plantas</span>
+                            <div class="filters">
+                                <!-- Búsqueda en vivo por nombre o tipo -->
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaPlantas"
+                                           placeholder="Buscar por nombre o tipo..."/>
+                                </div>
+                                <!-- Filtro activa/inactiva -->
+                                <select id="selectActivaPlantas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:13px;">
+                                    <option value="">Todas</option>
+                                    <option value="si">Activas</option>
+                                    <option value="no">Inactivas</option>
+                                </select>
+                                <a th:href="@{/plantas}" class="btn btn-outline btn-sm">Ver todas</a>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Imagen</th>
+                                    <th>Nombre común</th>
+                                    <th>Nombre científico</th>
+                                    <th>Precio</th>
+                                    <th>Tipo</th>
+                                    <th>Sol</th>
+                                    <th>Cantidad</th>
+                                    <th>F. Ingreso</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaPlantas">
+                                <tr th:if="${plantas == null or plantas.empty}">
+                                    <td colspan="10"><div class="empty">No hay plantas registradas.</div></td>
+                                </tr>
+                                <tr th:each="planta : ${plantas}"
+                                    th:attr="data-busqueda=${planta.nombreComun + ' ' + planta.tipo},
+                                             data-activo=${planta.activo ? 'si' : 'no'}">
+                                    <td>
+                                        <img th:if="${planta.datosImagen != null}"
+                                             th:src="@{'/plantas/imagen/' + ${planta.id}}"
+                                             alt="imagen"
+                                             style="width:40px;height:40px;object-fit:cover;border-radius:6px;">
+                                        <div th:unless="${planta.datosImagen != null}"
+                                             style="width:40px;height:40px;background:var(--verde-fondo);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">
+                                            🌿
+                                        </div>
+                                    </td>
+                                    <td th:text="${planta.nombreComun}"></td>
+                                    <td style="font-style:italic;color:var(--gris);"
+                                        th:text="${planta.nombreCientifico}"></td>
+                                    <td th:text="'₡ ' + ${#numbers.formatDecimal(planta.precio, 1, 'COMMA', 0, 'POINT')}"></td>
+                                    <td th:text="${planta.tipo}"></td>
+                                    <td>
+                                        <span th:text="${planta.requiereSol ? 'Sí' : 'No'}"
+                                              th:class="${planta.requiereSol} ? 'badge badge-green' : 'badge badge-gray'"></span>
+                                    </td>
+                                    <td th:text="${planta.cantidad}"></td>
+                                    <td th:text="${#temporals.format(planta.fechaIngreso, 'dd/MM/yyyy')}"></td>
+                                    <td>
+                                        <span th:if="${planta.activo}" class="badge badge-green">Activa</span>
+                                        <span th:unless="${planta.activo}" class="badge badge-gray">Inactiva</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/plantas/editar(id=${planta.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:if="${planta.activo}"
+                                               th:href="@{/plantas/desactivar(id=${planta.id})}"
+                                               class="btn btn-outline btn-sm"
+                                               onclick="return confirm('¿Desactivar esta planta?')">🔴</a>
+                                            <a th:unless="${planta.activo}"
+                                               th:href="@{/plantas/activar(id=${planta.id})}"
+                                               class="btn btn-activate btn-sm"
+                                               onclick="return confirm('¿Activar esta planta?')">🟢</a>
+                                            <a th:href="@{/plantas/eliminar(id=${planta.id})}"
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Eliminar esta planta?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <span id="contadorPlantas"></span>
+                            <div class="pag-nav" id="paginacionPlantas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTablaPlantas', 'paginacionPlantas', 'contadorPlantas', 10);
+            activarFiltrosConSelect('inputBusquedaPlantas', 'selectActivaPlantas', 'cuerpoTablaPlantas');
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="${modoEdicion} ? 'Editar Cultivo' : 'Nuevo Cultivo'">Cultivo</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('cultivos')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/cultivos}" class="crumb">Cultivos</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${modoEdicion} ? 'Editar' : 'Nuevo'"></span>
+                    <div class="topbar-right">
+                        <a th:href="@{/cultivos}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title" th:text="${modoEdicion} ? 'Editar Cultivo' : 'Nuevo Cultivo'"></div>
+                            <div class="page-sub">Registra los datos de siembra y seguimiento</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="card" style="padding:20px;">
+
+                        <!-- Crear -->
+                        <form th:if="${!modoEdicion}" th:action="@{/cultivos/guardar}"
+                              th:object="${cultivo}" method="post">
+
+                            <div class="section-label">Información principal</div>
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Planta *</label>
+                                    <select class="input" name="planta.id" required>
+                                        <option value="">— Seleccione una planta —</option>
+                                        <option th:each="p : ${plantas}"
+                                                th:value="${p.id}"
+                                                th:text="${p.nombreComun}"
+                                                th:selected="${cultivo.planta != null and cultivo.planta.id == p.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Administrador *</label>
+                                    <select class="input" name="admin.id" required>
+                                        <option value=""> Seleccione un administrador </option>
+                                        <option th:each="a : ${admins}"
+                                                th:value="${a.id}"
+                                                th:text="${a.nombre} + ' ' + ${a.apellido}"
+                                                th:selected="${cultivo.admin != null and cultivo.admin.id == a.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="section-label mt">Fechas</div>
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Fecha de siembra *</label>
+                                    <input class="input" type="date" name="fechaSiembra"
+                                           th:value="${cultivo.fechaSiembra != null ? #temporals.format(cultivo.fechaSiembra, 'yyyy-MM-dd') : ''}"
+                                           required>
+                                </div>
+                                <div class="field">
+                                    <label>Fecha de cosecha</label>
+                                    <input class="input" type="date" name="fechaCosecha"
+                                           th:value="${cultivo.fechaCosecha != null ? #temporals.format(cultivo.fechaCosecha, 'yyyy-MM-dd') : ''}">
+                                </div>
+                                <div class="field">
+                                    <label>Fecha de trasplante</label>
+                                    <input class="input" type="date" name="fechaTrasplante"
+                                           th:value="${cultivo.fechaTrasplante != null ? #temporals.format(cultivo.fechaTrasplante, 'yyyy-MM-dd') : ''}">
+                                </div>
+                                <div class="field">
+                                    <label>Tasa de éxito (%)</label>
+                                    <input class="input" type="number" name="tasaExito"
+                                           step="0.1" min="0" max="100"
+                                           th:value="${cultivo.tasaExito}">
+                                </div>
+                            </div>
+
+                            <div class="section-label mt">Detalles</div>
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Técnica de cultivo</label>
+                                    <input class="input" type="text" name="tecnica"
+                                           maxlength="100" placeholder="Ej: Hidroponía, Maceta"
+                                           th:value="${cultivo.tecnica}">
+                                </div>
+                                <div class="field">
+                                    <label>Sustrato</label>
+                                    <input class="input" type="text" name="sustrato"
+                                           maxlength="100" placeholder="Ej: Tierra, Perlita"
+                                           th:value="${cultivo.sustrato}">
+                                </div>
+                                <div class="field" style="grid-column:span 2">
+                                    <label>Observaciones</label>
+                                    <textarea class="input" name="observaciones" rows="3" maxlength="500"
+                                              th:text="${cultivo.observaciones}"></textarea>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;display:flex;gap:8px;">
+                                <button type="submit" class="btn btn-primary">Registrar cultivo</button>
+                                <a th:href="@{/cultivos}" class="btn btn-outline">Cancelar</a>
+                            </div>
+                        </form>
+
+                        <!-- Editar -->
+                        <form th:if="${modoEdicion}" th:action="@{/cultivos/actualizar}"
+                              th:object="${cultivo}" method="post">
+                            <input type="hidden" name="id" th:value="${cultivo.id}"/>
+
+                            <div class="section-label">Información principal</div>
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Planta *</label>
+                                    <select class="input" name="planta.id" required>
+                                        <option value=""> Seleccione una planta </option>
+                                        <option th:each="p : ${plantas}"
+                                                th:value="${p.id}"
+                                                th:text="${p.nombreComun}"
+                                                th:selected="${cultivo.planta != null and cultivo.planta.id == p.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Administrador *</label>
+                                    <select class="input" name="admin.id" required>
+                                        <option value=""> Seleccione un administrador </option>
+                                        <option th:each="a : ${admins}"
+                                                th:value="${a.id}"
+                                                th:text="${a.nombre} + ' ' + ${a.apellido}"
+                                                th:selected="${cultivo.admin != null and cultivo.admin.id == a.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="section-label mt">Fechas</div>
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Fecha de siembra *</label>
+                                    <input class="input" type="date" name="fechaSiembra"
+                                           th:value="${cultivo.fechaSiembra != null ? #temporals.format(cultivo.fechaSiembra, 'yyyy-MM-dd') : ''}"
+                                           required>
+                                </div>
+                                <div class="field">
+                                    <label>Fecha de cosecha</label>
+                                    <input class="input" type="date" name="fechaCosecha"
+                                           th:value="${cultivo.fechaCosecha != null ? #temporals.format(cultivo.fechaCosecha, 'yyyy-MM-dd') : ''}">
+                                </div>
+                                <div class="field">
+                                    <label>Fecha de trasplante</label>
+                                    <input class="input" type="date" name="fechaTrasplante"
+                                           th:value="${cultivo.fechaTrasplante != null ? #temporals.format(cultivo.fechaTrasplante, 'yyyy-MM-dd') : ''}">
+                                </div>
+                                <div class="field">
+                                    <label>Tasa de éxito (%)</label>
+                                    <input class="input" type="number" name="tasaExito"
+                                           step="0.1" min="0" max="100"
+                                           th:value="${cultivo.tasaExito}">
+                                </div>
+                            </div>
+
+                            <div class="section-label mt">Detalles</div>
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Técnica de cultivo</label>
+                                    <input class="input" type="text" name="tecnica"
+                                           maxlength="100" placeholder="Ej: Hidroponía, Maceta"
+                                           th:value="${cultivo.tecnica}">
+                                </div>
+                                <div class="field">
+                                    <label>Sustrato</label>
+                                    <input class="input" type="text" name="sustrato"
+                                           maxlength="100" placeholder="Ej: Tierra, Perlita"
+                                           th:value="${cultivo.sustrato}">
+                                </div>
+                                <div class="field" style="grid-column:span 2">
+                                    <label>Observaciones</label>
+                                    <textarea class="input" name="observaciones" rows="3" maxlength="500"
+                                              th:text="${cultivo.observaciones}"></textarea>
+                                </div>
+                                <div class="field">
+                                    <label class="check-opt">
+                                        <input type="checkbox" name="completada" value="true"
+                                               th:checked="${cultivo.completada}">
+                                        <span class="check-box">
+                                            <svg viewBox="0 0 12 10"><polyline points="1.5 5 4.5 8.5 10.5 1.5"/></svg>
+                                        </span>
+                                        Cultivo completado
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;display:flex;gap:8px;">
+                                <button type="submit" class="btn btn-primary">Actualizar cultivo</button>
+                                <a th:href="@{/cultivos}" class="btn btn-outline">Cancelar</a>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

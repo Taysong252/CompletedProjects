@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Login</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="login-wrapper">
+            <div class="login-box">
+                <div class="login-logo">
+                    <img th:src="@{/images/logo.png}" alt="GreenHarmony"
+                         style="max-width: 140px; margin-bottom: 8px; display: block; margin-left: auto; margin-right: auto;"/>
+                    GreenHarmony
+                </div>
+                <div class="login-title">Ingresá tus credenciales para continuar</div>
+
+                <div th:if="${error}" class="alert alert-error">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span th:text="${error}"></span>
+                </div>
+                <div th:if="${exito}" class="alert alert-ok">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <span th:text="${exito}"></span>
+                </div>
+
+                <form action="/login" method="post">
+                    <div class="form-group">
+                        <label>Correo electrónico</label>
+                        <input type="email" name="email" placeholder="correo@ejemplo.com" required autofocus/>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" name="contrasena" placeholder="••••••••" required/>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Ingresar</button>
+                </form>
+
+                <div class="login-divider" style="margin-top: 16px;">
+                    ¿No tenés cuenta?
+                    <a th:href="@{/registro}" style="color: var(--verde); font-weight: 600; margin-left: 4px;">
+                        Crear cuenta nueva
+                    </a>
+                </div>
+
+                <div class="login-divider">GreenHarmony © 2025</div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

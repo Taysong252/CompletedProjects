@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <body>
+
+        <!-- SIDEBAR ADMINISTRADOR -->
+        <aside th:fragment="sidebar(moduloActivo)" class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 19.97c.8 1.27 2.29 1.97 3.66 1.56C9.57 20.9 11 18 12 17c4 4 8 2 9-3 1-5-1-8-4-6z"/></svg>
+                </div>
+                <div>
+                    <div class="brand-name">GreenHarmony</div>
+                    <div class="brand-sub">Administración · Vivero</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="nav-label">Principal</span>
+                <a th:href="@{/inicio/admin}"
+                   th:classappend="${moduloActivo == 'inicio'} ? ' active'"
+                   class="nav-link">🏠 Inicio</a>
+
+                <span class="nav-label">Inventario</span>
+                <a th:href="@{/plantas/}"
+                   th:classappend="${moduloActivo == 'plantas'} ? ' active'"
+                   class="nav-link">🌿 Plantas</a>
+                <a th:href="@{/cultivos/}"
+                   th:classappend="${moduloActivo == 'cultivos'} ? ' active'"
+                   class="nav-link">🌱 Cultivos</a>
+                <a th:href="@{/insumos/}"
+                   th:classappend="${moduloActivo == 'insumos'} ? ' active'"
+                   class="nav-link">🧪 Insumos</a>
+
+                <span class="nav-label">Gestión</span>
+                <a th:href="@{/usuarios/}"
+                   th:classappend="${moduloActivo == 'usuarios'} ? ' active'"
+                   class="nav-link">👥 Usuarios</a>
+                <a th:href="@{/compras/}"
+                   th:classappend="${moduloActivo == 'compras'} ? ' active'"
+                   class="nav-link">🛒 Compras</a>
+                <a th:href="@{/visitas/}"
+                   th:classappend="${moduloActivo == 'visitas'} ? ' active'"
+                   class="nav-link">📅 Visitas</a>
+                <a th:href="@{/entregas/}"
+                   th:classappend="${moduloActivo == 'entregas'} ? ' active'"
+                   class="nav-link">🚚 Entregas</a>
+                <a th:href="@{/ventas/}"
+                   th:classappend="${moduloActivo == 'ventas'} ? ' active'"
+                   class="nav-link">💰 Ventas</a>
+                <a th:href="@{/quejas/}"
+                   th:classappend="${moduloActivo == 'quejas'} ? ' active'"
+                   class="nav-link">📋 Quejas</a>
+
+                <span class="nav-label">Más</span>
+                <a th:href="@{/promociones/}"
+                   th:classappend="${moduloActivo == 'promociones'} ? ' active'"
+                   class="nav-link">🏷️ Promociones</a>
+                <a th:href="@{/empaques/}"
+                   th:classappend="${moduloActivo == 'empaques'} ? ' active'"
+                   class="nav-link">📦 Empaques</a>
+                <a th:href="@{/zonas/}"
+                   th:classappend="${moduloActivo == 'zonas'} ? ' active'"
+                   class="nav-link">🗺️ Zonas</a>
+                <a th:href="@{/tareas/}"
+                   th:classappend="${moduloActivo == 'tareas'} ? ' active'"
+                   class="nav-link">✅ Tareas</a>
+            </nav>
+            <div class="sidebar-foot">
+                <div class="foot-avatar">
+                    <span th:text="${session.usuarioActivo?.nombre != null}
+                          ? ${#strings.substring(session.usuarioActivo.nombre, 0, 1).toUpperCase()
+                          + #strings.substring(session.usuarioActivo.apellido, 0, 1).toUpperCase()}
+                          : 'AD'">AD</span>
+                </div>
+                <div>
+                    <div class="foot-name"
+                         th:text="${session.usuarioActivo?.nombre} + ' ' + ${session.usuarioActivo?.apellido} ?: 'Admin'">
+                        Admin
+                    </div>
+                    <div class="foot-role">Administrador</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- SIDEBAR CLIENTE -->
+        <aside th:fragment="sidebarCliente(moduloActivo)" class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 19.97c.8 1.27 2.29 1.97 3.66 1.56C9.57 20.9 11 18 12 17c4 4 8 2 9-3 1-5-1-8-4-6z"/></svg>
+                </div>
+                <div>
+                    <div class="brand-name">GreenHarmony</div>
+                    <div class="brand-sub">Portal · Cliente</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="nav-label">Mi portal</span>
+                <a th:href="@{/inicio/cliente}"
+                   th:classappend="${moduloActivo == 'inicio'} ? ' active'"
+                   class="nav-link">🏠 Inicio</a>
+
+                <span class="nav-label">Tienda</span>
+                <a th:href="@{/plantas/catalogo-vista}"
+                   th:classappend="${moduloActivo == 'catalogo'} ? ' active'"
+                   class="nav-link">🌿 Catálogo de Plantas</a>
+                <a th:href="@{/promociones/}"
+                   th:classappend="${moduloActivo == 'promociones'} ? ' active'"
+                   class="nav-link">🏷️ Promociones</a>
+
+                <span class="nav-label">Visitas</span>
+                <a th:href="@{/visitas/add}"
+                   th:classappend="${moduloActivo == 'agendar'} ? ' active'"
+                   class="nav-link">📅 Solicitar Visita</a>
+                <a th:href="@{/visitas/}"
+                   th:classappend="${moduloActivo == 'visitas'} ? ' active'"
+                   class="nav-link">🗓️ Mis Visitas</a>
+
+                <span class="nav-label">Más</span>
+                <a th:href="@{/quejas/miQueja}"
+                   th:classappend="${moduloActivo == 'quejas'} ? ' active'"
+                   class="nav-link">📋 Quejas y Sugerencias</a>
+            </nav>
+            <div class="sidebar-foot">
+                <div class="foot-avatar" style="background:#2563eb;">
+                    <span th:text="${session.usuarioActivo?.iniciales} ?: 'CL'">CL</span>
+                </div>
+                <div>
+                    <div class="foot-name" th:text="${session.usuarioActivo?.nombre} ?: 'Cliente'">Cliente</div>
+                    <div class="foot-role">Cliente</div>
+                </div>
+            </div>
+        </aside>
+    </body>
+</html>

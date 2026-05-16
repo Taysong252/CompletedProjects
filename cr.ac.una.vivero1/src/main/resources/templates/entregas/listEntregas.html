@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Entregas</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('entregas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <span class="crumb-now">Entregas</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/entregas/nuevo}" class="btn btn-primary btn-sm">+ Nueva entrega</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Gestión de Entregas</div>
+                            <div class="page-sub">Administra las entregas del sistema</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok" th:text="${exito}"></div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="stats">
+                        <div class="stat"><div class="stat-num" th:text="${totalPendientes}">0</div><div class="stat-label">Pendientes</div></div>
+                        <div class="stat"><div class="stat-num" th:text="${totalEnCamino}">0</div><div class="stat-label">En camino</div></div>
+                        <div class="stat"><div class="stat-num" th:text="${totalEntregadas}">0</div><div class="stat-label">Entregadas</div></div>
+                        <div class="stat"><div class="stat-num" th:text="${totalCanceladas}">0</div><div class="stat-label">Canceladas</div></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de entregas</span>
+                            <div class="filters">
+
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaEntregas"
+                                           placeholder="Buscar por cliente o dirección..."/>
+                                </div>
+
+                                <select id="selectEstadoEntregas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:13px;">
+                                    <option value=""          th:selected="${estadoFiltro == ''}">Todos los estados</option>
+                                    <option value="Pendiente" th:selected="${estadoFiltro == 'Pendiente'}">Pendiente</option>
+                                    <option value="En camino" th:selected="${estadoFiltro == 'En camino'}">En camino</option>
+                                    <option value="Entregado" th:selected="${estadoFiltro == 'Entregado'}">Entregado</option>
+                                    <option value="Cancelado" th:selected="${estadoFiltro == 'Cancelado'}">Cancelado</option>
+                                </select>
+
+                                <select id="selectMetodoEntregas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:13px;">
+                                    <option value="">Todos los métodos</option>
+                                    <option value="Domicilio">Domicilio</option>
+                                    <option value="Retiro en tienda">Retiro en tienda</option>
+                                </select>
+
+                                <a th:href="@{/entregas}" class="btn btn-outline btn-sm">Ver todas</a>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Cliente</th>
+                                    <th>Dirección</th>
+                                    <th>F. Programada</th>
+                                    <th>Estado</th>
+                                    <th>Método</th>
+                                    <th>Costo</th>
+                                    <th>Confirmada</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaEntregas">
+                                <tr th:if="${#lists.isEmpty(entregas)}">
+                                    <td colspan="9"><div class="empty">No hay entregas registradas.</div></td>
+                                </tr>
+  
+                                <tr th:each="e : ${entregas}"
+                                    th:attr="data-busqueda=${(e.nombreCliente != null ? e.nombreCliente : '') + ' ' + e.direccionEntrega},
+                                             data-activo=${e.estadoEntrega},
+                                             data-metodo=${e.metodoEntrega}">
+                                    <td th:text="${e.id}"></td>
+                                    <td th:text="${e.nombreCliente != null ? e.nombreCliente : '—'}"></td>
+                                    <td th:text="${e.direccionEntrega}"></td>
+                                    <td th:text="${#temporals.format(e.fechaProgramada, 'dd/MM/yyyy')}"></td>
+                                    <td>
+                                        <span th:text="${e.estadoEntrega}"
+                                              th:class="${e.estadoEntrega == 'Pendiente'  ? 'badge badge-gray'  :
+                                                         e.estadoEntrega == 'En camino'  ? 'badge badge-blue'  :
+                                                         e.estadoEntrega == 'Entregado'  ? 'badge badge-green' :
+                                                                                           'badge badge-gray'}">
+                                        </span>
+                                    </td>
+                                    <td th:text="${e.metodoEntrega}"></td>
+                                    <td th:text="'₡' + ${#numbers.formatDecimal(e.costoEnvio, 1, 'COMMA', 2, 'POINT')}"></td>
+                                    <td>
+                                        <span th:if="${e.confirmada}"  class="badge badge-green">Sí</span>
+                                        <span th:unless="${e.confirmada}" class="badge badge-gray">No</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/entregas/editar(id=${e.id})}"
+                                               class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:if="${!e.confirmada}"
+                                               th:href="@{/entregas/confirmar(id=${e.id})}"
+                                               class="btn btn-activate btn-sm"
+                                               onclick="return confirm('¿Confirmar esta entrega?')">Confirmar</a>
+                                            <a th:if="${e.confirmada}"
+                                               th:href="@{/entregas/desconfirmar(id=${e.id})}"
+                                               class="btn btn-outline btn-sm"
+                                               onclick="return confirm('¿Desconfirmar esta entrega?')">Desconfirmar</a>
+                                            <a th:href="@{/entregas/eliminar(id=${e.id})}"
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Eliminar esta entrega?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <span id="contadorEntregas"></span>
+                            <div class="pag-nav" id="paginacionEntregas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            initEntregas();
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

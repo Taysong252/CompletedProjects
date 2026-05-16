@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Usuario</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+
+            <aside th:replace="~{fragmentos :: sidebar('usuarios')}"></aside>
+
+            <div class="main">
+
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <a th:href="@{/usuarios/}" class="crumb">Usuarios</a>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario'">Usuario</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/usuarios/}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+
+                <div class="page">
+
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title" th:text="${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario'">Usuario</div>
+                            <div class="page-sub"   th:text="${modoEdicion} ? 'Modifica los datos del usuario' : 'Completa el formulario para registrar una cuenta'">-</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <form th:action="${modoEdicion} ? @{/usuarios/actualizar} : @{/usuarios/guardar}"
+                          th:object="${usuario}"
+                          method="post"
+                          class="form-grid">
+
+                        <input th:if="${modoEdicion}" type="hidden" name="id" th:value="*{id}">
+
+                        <div class="form-left">
+
+                            <div class="card">
+                                <div class="card-head"><span class="card-title">Información personal</span></div>
+                                <div style="padding: 20px;">
+
+                                    <div class="section-label">Datos básicos</div>
+
+                                    <div class="field-grid">
+                                        <div class="field">
+                                            <label>Nombre <span class="req">*</span></label>
+                                            <input class="input" type="text" th:field="*{nombre}"
+                                                   placeholder="Ej: María" required
+                                                   id="iNombre" oninput="actualizarPreview()">
+                                        </div>
+                                        <div class="field">
+                                            <label>Apellido <span class="req">*</span></label>
+                                            <input class="input" type="text" th:field="*{apellido}"
+                                                   placeholder="Ej: Castro" required
+                                                   id="iApellido" oninput="actualizarPreview()">
+                                        </div>
+                                        <div class="field">
+                                            <label>Correo <span class="req">*</span></label>
+                                            <input class="input" type="email" th:field="*{email}"
+                                                   placeholder="correo@ejemplo.com" required
+                                                   id="iEmail" oninput="actualizarPreview()">
+                                            <span class="hint">Debe ser único en el sistema</span>
+                                        </div>
+                                        <div class="field">
+                                            <label>Teléfono <span class="req">*</span></label>
+                                            <input class="input" type="tel" th:field="*{telefono}"
+                                                   placeholder="8888-0000" required pattern="\d{4}-?\d{4}">
+                                            <span class="hint">Formato: 8888-0000</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="section-label mt">Dirección</div>
+
+                                    <div class="field">
+                                        <label>Dirección</label>
+                                        <input class="input" type="text" th:field="*{direccion}"
+                                               placeholder="Ej: Sarapiquí, 200m norte del parque">
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div th:if="${!modoEdicion}" class="card">
+                                <div class="card-head"><span class="card-title">Credenciales</span></div>
+                                <div style="padding: 20px;">
+                                    <div class="field-grid">
+                                        <div class="field">
+                                            <label>Contraseña <span class="req">*</span></label>
+                                            <input class="input" type="password" th:field="*{contrasena}"
+                                                   placeholder="Mínimo 8 caracteres" id="iPass1" minlength="8">
+                                            <span class="hint">Mínimo 8 caracteres</span>
+                                        </div>
+                                        <div class="field">
+                                            <label>Confirmar contraseña <span class="req">*</span></label>
+                                            <input class="input" type="password" id="iPass2" placeholder="Repetir contraseña">
+                                            <span id="msgPass" style="font-size:11px; color:var(--rojo); display:none;">
+                                                Las contraseñas no coinciden
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="form-right">
+
+                            <div class="preview-card">
+                                <div class="preview-avatar" id="pAvatar">?</div>
+                                <div class="preview-name"   id="pNombre">Nombre Apellido</div>
+                                <div class="preview-email"  id="pEmail">correo@ejemplo.com</div>
+                                <div class="preview-badge"  id="pBadge">
+                                    <span class="badge badge-gray">Sin tipo</span>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-head"><span class="card-title">Configuración</span></div>
+                                <div style="padding: 18px; display: flex; flex-direction: column; gap: 16px;">
+
+                                    <div class="field">
+                                        <label>Tipo de usuario <span class="req">*</span></label>
+                                        <div class="radio-group">
+                                            <label class="radio-opt">
+                                                <input type="radio" name="tipoUsuario" value="Cliente"
+                                                       th:checked="${usuario.tipoUsuario == 'Cliente'}"
+                                                       onchange="actualizarPreview()">
+                                                <span class="radio-dot"></span>
+                                                Cliente
+                                            </label>
+                                            <label class="radio-opt">
+                                                <input type="radio" name="tipoUsuario" value="Administrador"
+                                                       th:checked="${usuario.tipoUsuario == 'Administrador'}"
+                                                       onchange="actualizarPreview()">
+                                                <span class="radio-dot"></span>
+                                                Administrador
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${!modoEdicion}" class="field">
+                                        <label>Fecha de registro</label>
+                                        <input class="input" type="date" th:field="*{fechaRegistro}">
+                                        <span class="hint">Por defecto la fecha de hoy</span>
+                                    </div>
+
+                                    <div class="field">
+                                        <label>Estado</label>
+                                        <label class="check-opt">
+                                            <input type="checkbox" name="activo" value="true" th:checked="${usuario.activo}">
+                                            <span class="check-box">
+                                                <svg viewBox="0 0 12 10"><polyline points="1.5 5 4.5 8.5 10.5 1.5"/></svg>
+                                            </span>
+                                            Cuenta activa
+                                        </label>
+                                        <span class="hint">Desmarca para crear la cuenta inactiva</span>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full"
+                                    th:text="${modoEdicion} ? 'Actualizar usuario' : 'Guardar usuario'">Guardar</button>
+
+                            <a th:href="@{/usuarios/}" class="btn btn-outline btn-full">Cancelar</a>
+
+                            <div th:if="${modoEdicion}" class="danger-zone">
+                                <a th:href="@{/usuarios/eliminar(id=${usuario.id})}"
+                                   class="btn btn-danger btn-full"
+                                   onclick="return confirm('¿Desea eliminar este usuario? Esta acción no se puede deshacer')">
+                                    Eliminar usuario
+                                </a>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+    </body>
+</html>

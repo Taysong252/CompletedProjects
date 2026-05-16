@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Ventas</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('ventas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now">Ventas</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/ventas/nuevo}" class="btn btn-primary btn-sm">+ Nueva venta</a>
+                    </div>
+                </header>
+
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Gestión de Ventas</div>
+                            <div class="page-sub">Registro y seguimiento de ventas del vivero</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                        <span th:text="${exito}"></span>
+                    </div>
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <div class="stats" style="grid-template-columns: repeat(3,1fr);">
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalVentas}">0</div>
+                            <div class="stat-label">Total de ventas</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalPagadas}">0</div>
+                            <div class="stat-label">Pagadas</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalPendientes}">0</div>
+                            <div class="stat-label">Pendientes</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de ventas</span>
+                            <div class="filters">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24">
+                                    <path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/>
+                                    </svg>
+                                    <input type="text" id="inputBusquedaVentas"
+                                           placeholder="Buscar por código o cliente..."/>
+                                </div>
+                                <select id="selectEstadoVentas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:12px;">
+                                    <option value="">Todos los estados</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Pagada">Pagada</option>
+                                    <option value="Cancelada">Cancelada</option>
+                                </select>
+                                <select id="selectMetodoVentas" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:12px;">
+                                    <option value="">Todos los métodos</option>
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Tarjeta">Tarjeta</option>
+                                    <option value="Transferencia">Transferencia</option>
+                                </select>
+                                <a th:href="@{/ventas/}" class="btn btn-outline btn-sm">Ver todas</a>
+                            </div>
+                        </div>
+                        <div style="overflow-x: auto; width: 100%;">
+                            <table style="min-width: 780px; font-size: 12px;">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Cliente</th>
+                                        <th>Administrador</th>
+                                        <th>Fecha</th>
+                                        <th>Subtotal</th>
+                                        <th>Descuento</th>
+                                        <th>Impuesto</th>
+                                        <th>Total</th>
+                                        <th>Promoción</th>
+                                        <th>Método</th>
+                                        <th>Estado</th>
+                                        <th>Facturado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpoTablaVentas">
+                                    <tr th:if="${ventas == null or ventas.empty}">
+                                        <td colspan="13">
+                                            <div class="empty">No hay ventas registradas.</div>
+                                        </td>
+                                    </tr>
+                                    <tr th:each="v : ${ventas}"
+                                        th:attr="data-busqueda=${v.codigoVenta + ' ' + (v.cliente != null ? v.cliente.nombre + ' ' + v.cliente.apellido : '')},
+                                        data-activo=${v.estado}">
+                                        <td>
+                                            <span class="badge badge-blue" th:text="${v.codigoVenta}"></span>
+                                        </td>
+                                        <td th:text="${v.cliente != null ? v.cliente.nombre + ' ' + v.cliente.apellido : '—'}"></td>
+                                        <td th:text="${v.admin != null ? v.admin.nombre + ' ' + v.admin.apellido : '—'}"></td>
+                                        <td th:text="${#temporals.format(v.fechaVenta, 'dd/MM/yyyy')}"></td>
+                                        <td th:text="'₡' + ${#numbers.formatDecimal(v.subtotal, 1, 'COMMA', 2, 'POINT')}"></td>
+                                        <td style="color:#e07b39;"
+                                            th:text="${v.descuentoAplicado > 0} ? '-₡' + ${#numbers.formatDecimal(v.descuentoAplicado, 1, 'COMMA', 2, 'POINT')} : '—'">
+                                        </td>
+                                        <td th:text="'₡' + ${#numbers.formatDecimal(v.impuesto, 1, 'COMMA', 2, 'POINT')}"></td>
+                                        <td style="font-weight:600;"
+                                            th:text="'₡' + ${#numbers.formatDecimal(v.total, 1, 'COMMA', 2, 'POINT')}">
+                                        </td>
+                                        <td>
+                                            <span th:if="${v.promocion != null}"
+                                                  class="badge badge-green"
+                                                  th:text="${v.promocion.codigoPromo}">
+                                            </span>
+                                            <span th:unless="${v.promocion != null}"
+                                                  class="badge badge-gray">—</span>
+                                        </td>
+                                        <td th:text="${v.metodoPago}"></td>
+                                        <td>
+                                            <span th:text="${v.estado}"
+                                                  th:class="${v.estado == 'Pagada'}     ? 'badge badge-green' :
+                                                  (${v.estado == 'Cancelada'} ? 'badge badge-gray'  : 'badge badge-blue')">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${v.facturado}"     class="badge badge-green">Sí</span>
+                                            <span th:unless="${v.facturado}" class="badge badge-gray">No</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a th:href="@{/ventas/editar(id=${v.id})}"
+                                                   class="btn btn-outline btn-sm">Editar</a>
+                                                <a th:href="@{/ventas/eliminar(id=${v.id})}"
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('¿Eliminar esta venta?')">Eliminar</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination">
+                            <span id="contadorVentas"></span>
+                            <div class="pag-nav" id="paginacionVentas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            initVentas();
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

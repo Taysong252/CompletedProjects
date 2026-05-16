@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Formulario Empaque</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('empaques')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <a th:href="@{/empaques/}" class="crumb">Empaques</a>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${empaque.id == 0} ? 'Agregar Empaque' : 'Editar Empaque'"></span>
+                    <div class="topbar-right">
+                        <a th:href="@{/empaques/}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div class="page-title" th:text="${empaque.id == 0} ? 'Agregar Empaque' : 'Editar Empaque'"></div>
+                    </div>
+                    <div class="card">
+                        <div style="padding:20px">
+                            <form th:action="@{/empaques/save}" th:object="${empaque}" method="post">
+                                <input type="hidden" th:field="*{id}"/>
+                                <div class="field-grid">
+                                    <div class="field">
+                                        <label>Tipo de Empaque</label>
+                                        <input class="input" type="text" th:field="*{tipo}" placeholder="Ej: Bolsa plástica, Maceta, Caja..."/>
+                                        <span class="hint error" th:text="${errorTipo}"></span>
+                                    </div>
+                                    <div class="field">
+                                        <label>Descripción</label>
+                                        <textarea class="input" th:field="*{descripcion}" rows="3" placeholder="Descripción del empaque..."></textarea>
+                                        <span class="hint error" th:text="${errorDescripcion}"></span>
+                                    </div>
+                                    <div class="field">
+                                        <label>Cantidad de Plantas</label>
+                                        <input class="input" type="number" min="1" th:field="*{cantidadPlanta}"/>
+                                        <span class="hint error" th:text="${errorCantidadPlanta}"></span>
+                                    </div>
+                                    <div class="field">
+                                        <label>Unidad de Medida</label>
+                                        <select class="input" th:field="*{unidadMedida}">
+                                            <option value="">Seleccione</option>
+                                            <option value="Metro">Metro</option>
+                                            <option value="Kilogramo">Kilogramo</option>
+                                            <option value="Litro">Litro</option>
+                                            <option value="Gramo">Gramo</option>
+                                            <option value="Centímetro">Centímetro</option>
+                                        </select>
+                                        <span class="hint error" th:text="${errorUnidadMedida}"></span>
+                                    </div>
+                                    <div class="field">
+                                        <label>Stock</label>
+                                        <input class="input" type="number" min="0" th:field="*{stock}"/>
+                                        <span class="hint error" th:text="${errorStock}"></span>
+                                    </div>
+                                    <div class="field">
+                                        <label>Costo Unitario (₡)</label>
+                                        <input class="input" type="number" step="0.01" min="0.01" th:field="*{costoUnitario}"/>
+                                        <span class="hint error" th:text="${errorCostoUnitario}"></span>
+                                    </div>
+                                    <div class="field">
+                                        <label>Activo</label>
+                                        <label class="check-opt">
+                                            <input type="checkbox" name="activo" value="true" th:checked="${empaque.activo}"/>
+                                            <span class="check-box">
+                                                <svg viewBox="0 0 12 10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="1.5 5 4.5 8.5 10.5 1.5"/>
+                                                </svg>
+                                            </span>
+                                            Activo
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                                <a th:href="@{/empaques/}" class="btn btn-outline">Cancelar</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${modoEdicion} ? 'GreenHarmony · Editar Venta' : 'GreenHarmony · Nueva Venta'">
+            GreenHarmony · Venta
+        </title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('ventas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <a th:href="@{/ventas/}" class="crumb">Ventas</a>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now"
+                          th:text="${modoEdicion} ? 'Editar Venta' : 'Nueva Venta'">
+                    </span>
+                </header>
+
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title"
+                                 th:text="${modoEdicion} ? 'Editar Venta' : 'Nueva Venta'">
+                            </div>
+                            <div class="page-sub"
+                                 th:text="${modoEdicion} ? 'Modifica los datos de la venta' : 'Registra una nueva venta en el sistema'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <div class="card">
+                        <form th:action="${modoEdicion} ? @{/ventas/actualizar} : @{/ventas/guardar}"
+                              method="post">
+
+                            <input th:if="${modoEdicion}"
+                                   type="hidden" name="id" th:value="${venta.id}"/>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="clienteId">Cliente <span class="req">*</span></label>
+                                    <select id="clienteId" name="clienteId" class="input" required>
+                                        <option value="">— Seleccione un cliente —</option>
+                                        <option th:each="c : ${clientes}"
+                                                th:value="${c.id}"
+                                                th:text="${c.nombre + ' ' + c.apellido}"
+                                                th:selected="${venta.cliente != null and venta.cliente.id == c.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="adminId">Administrador <span class="req">*</span></label>
+                                    <select id="adminId" name="adminId" class="input" required>
+                                        <option value="">— Seleccione un administrador —</option>
+                                        <option th:each="a : ${admins}"
+                                                th:value="${a.id}"
+                                                th:text="${a.nombre + ' ' + a.apellido}"
+                                                th:selected="${venta.admin != null and venta.admin.id == a.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="subtotal">Subtotal (₡) <span class="req">*</span></label>
+                                    <input type="number" id="subtotal" name="subtotal"
+                                           class="input" min="0.01" step="0.01"
+                                           th:value="${venta.subtotal}"
+                                           placeholder="0.00" required/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="metodoPago">Método de pago <span class="req">*</span></label>
+                                    <select id="metodoPago" name="metodoPago" class="input" required>
+                                        <option value="">— Seleccione —</option>
+                                        <option value="Efectivo"
+                                                th:selected="${venta.metodoPago == 'Efectivo'}">Efectivo</option>
+                                        <option value="Tarjeta"
+                                                th:selected="${venta.metodoPago == 'Tarjeta'}">Tarjeta</option>
+                                        <option value="Transferencia"
+                                                th:selected="${venta.metodoPago == 'Transferencia'}">Transferencia</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="estado">Estado <span class="req">*</span></label>
+                                    <select id="estado" name="estado" class="input" required>
+                                        <option value="">— Seleccione —</option>
+                                        <option value="Pendiente"
+                                                th:selected="${venta.estado == 'Pendiente'}">Pendiente</option>
+                                        <option value="Pagada"
+                                                th:selected="${venta.estado == 'Pagada'}">Pagada</option>
+                                        <option value="Cancelada"
+                                                th:selected="${venta.estado == 'Cancelada'}">Cancelada</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="facturado">Facturado</label>
+                                    <select id="facturado" name="facturado" class="input">
+                                        <option value="false"
+                                                th:selected="${!venta.facturado}">No</option>
+                                        <option value="true"
+                                                th:selected="${venta.facturado}">Sí</option>
+                                    </select>
+                                </div>
+                                <div class="form-group form-full">
+                                    <label for="notasAdicionales">Notas adicionales</label>
+                                    <textarea id="notasAdicionales" name="notasAdicionales"
+                                              class="input" rows="3"
+                                              placeholder="Observaciones sobre la venta..."
+                                              th:text="${venta.notasAdicionales}"></textarea>
+                                </div>
+                                <div class="form-group form-full">
+                                    <label for="codigoPromo">
+                                        Código de Promoción
+                                        <span style="color:#888; font-weight:400;">(opcional)</span>
+                                    </label>
+                                    <div style="display:flex; gap:8px; align-items:flex-start;">
+                                        <input type="text"
+                                               id="codigoPromo"
+                                               name="codigoPromo"
+                                               class="input"
+                                               placeholder="Ej: VERANO20"
+                                               style="text-transform:uppercase; flex:1;"
+                                               th:value="${venta.promocion != null ? venta.promocion.codigoPromo : ''}"/>
+                                        <button type="button"
+                                                class="btn btn-outline btn-sm"
+                                                onclick="verificarPromocion()"
+                                                style="white-space:nowrap; height:38px;">
+                                            Verificar
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm"
+                                                onclick="limpiarPromo()"
+                                                style="white-space:nowrap; height:38px;">
+                                            Quitar
+                                        </button>
+                                    </div>
+                                    <div id="promoResultado" style="margin-top:6px; font-size:13px;"></div>
+                                </div>
+
+                                <div class="form-full" style="
+                                     background: var(--bg-2, #f8faf8);
+                                     border: 1px solid var(--border, #e0e0e0);
+                                     border-radius: 8px;
+                                     padding: 16px 20px;">
+                                    <div style="font-weight:600; margin-bottom:10px; font-size:14px;">
+                                        Resumen de la venta
+                                    </div>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; font-size:14px;">
+
+                                        <span style="color:#666;">Subtotal:</span>
+                                        <span id="resSubtotal" style="text-align:right; font-weight:500;">₡0.00</span>
+
+                                        <span id="labelDescuento" style="color:#e07b39;">Descuento (0%):</span>
+                                        <span id="resDescuento"   style="text-align:right; color:#e07b39;">— ₡0.00</span>
+
+                                        <span style="color:#666;">Impuesto (13%):</span>
+                                        <span id="resImpuesto" style="text-align:right;">₡0.00</span>
+
+                                        <span style="font-weight:700; font-size:15px;
+                                              border-top:1px solid var(--border,#e0e0e0);
+                                              padding-top:6px;">
+                                            Total a pagar:
+                                        </span>
+                                        <span id="resTotal" style="
+                                              text-align:right; font-weight:700; font-size:15px;
+                                              color:var(--primary,#2d7a4f);
+                                              border-top:1px solid var(--border,#e0e0e0);
+                                              padding-top:6px;">
+                                            ₡0.00
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="form-actions">
+                                <a th:href="@{/ventas/}" class="btn btn-outline">Cancelar</a>
+                                <button type="submit" class="btn btn-primary"
+                                        th:text="${modoEdicion} ? 'Actualizar Venta' : 'Registrar Venta'">
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:src="@{/js/funciones.js}"></script>
+        <script th:inline="javascript">
+            iniciarFormVenta(
+                    /*[[${venta.promocion != null ? venta.promocion.descuentoPorcentaje : 0}]]*/ 0,
+                    /*[[${venta.promocion != null ? venta.promocion.montoMinimo        : 0}]]*/ 0,
+                    /*[[${venta.promocion != null ? venta.promocion.nombrePromocion    : ''}]]*/ ''
+                    );
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

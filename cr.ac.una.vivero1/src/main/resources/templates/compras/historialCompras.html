@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <title>Historial de Compras - GreenHarmony</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('compras')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/insumos/}" class="crumb">Insumos</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now"
+                          th:text="${insumo != null} ? 'Historial: ' + ${insumo.nombreInsumo} : 'Historial de Compras'">
+                    </span>
+                    <div class="topbar-right">
+                        <a th:href="@{/compras/add(insumoId=${insumo?.id})}" th:if="${insumo != null}"
+                           class="btn btn-primary btn-sm">+ Nueva Compra</a>
+                        <a th:href="@{/compras/add}" th:if="${insumo == null}"
+                           class="btn btn-primary btn-sm">+ Nueva Compra</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title"
+                                 th:text="${insumo != null} ? 'Historial de Compras: ' + ${insumo.nombreInsumo} : 'Historial General de Compras'">
+                            </div>
+                            <div class="page-sub"
+                                 th:text="${insumo != null} ? 'Stock actual: ' + ${insumo.cantidadStock} + ' ' + ${insumo.unidadMedida} : 'Todas las compras registradas'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok">✅ <span th:text="${exito}"></span></div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Compras registradas</span>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th th:if="${insumo == null}">Insumo</th>
+                                    <th>Fecha</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Total</th>
+                                    <th>Proveedor</th>
+                                    <th>Observaciones</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="c : ${compras}">
+                                    <td th:if="${insumo == null}" th:text="${c.nombreInsumo}"></td>
+                                    <td th:text="${#temporals.format(c.fechaCompra, 'dd/MM/yyyy')}"></td>
+                                    <td th:text="${c.cantidad}"></td>
+                                    <td th:text="'₡ ' + ${#numbers.formatDecimal(c.precioUnitario, 1, 'COMMA', 0, 'POINT')}"></td>
+                                    <td th:text="'₡ ' + ${#numbers.formatDecimal(c.cantidad * c.precioUnitario, 1, 'COMMA', 0, 'POINT')}"></td>
+                                    <td th:text="${c.proveedorNombre != null} ? ${c.proveedorNombre} : '—'"></td>
+                                    <td th:text="${c.observaciones != null} ? ${c.observaciones} : '—'"></td>
+                                    <td>
+                                        <a th:href="@{/compras/delete(id=${c.id})}"
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('¿Eliminar esta compra? El stock NO se revertirá automáticamente.')">
+                                            Eliminar
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(compras)}">
+                                    <td colspan="8"><div class="empty">No hay compras registradas.</div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <a th:href="@{/insumos/}" class="btn btn-outline btn-sm">← Volver a Insumos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

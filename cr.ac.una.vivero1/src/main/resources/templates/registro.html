@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Crear cuenta</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="login-wrapper" style="align-items: flex-start; padding: 40px 16px;">
+            <div class="login-box" style="max-width: 480px; width: 100%;">
+
+                <div class="login-logo">
+                    <img th:src="@{/images/logo.png}" alt="GreenHarmony"
+                         style="max-width: 120px; margin-bottom: 8px; display: block; margin-left: auto; margin-right: auto;"/>
+                    GreenHarmony
+                </div>
+                <div class="login-title">Creá tu cuenta para acceder al portal de clientes</div>
+
+                <div th:if="${error}" class="alert alert-error">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <form action="/registro/guardar" method="post" th:object="${usuario}">
+
+                    <div class="section-label" style="margin-top: 8px;">Datos personales</div>
+
+                    <div class="form-group">
+                        <label>Nombre <span class="req">*</span></label>
+                        <input class="input" type="text" th:field="*{nombre}"
+                               placeholder="Ej: María" required/>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido <span class="req">*</span></label>
+                        <input class="input" type="text" th:field="*{apellido}"
+                               placeholder="Ej: Castro" required/>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo electrónico <span class="req">*</span></label>
+                        <input class="input" type="email" th:field="*{email}"
+                               placeholder="correo@ejemplo.com" required/>
+                        <span class="hint" style="font-size:11px; color:#a8a29e;">Debe ser único en el sistema</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono <span class="req">*</span></label>
+                        <input class="input" type="tel" th:field="*{telefono}"
+                               placeholder="8888-0000" required pattern="\d{4}-?\d{4}"/>
+                        <span class="hint" style="font-size:11px; color:#a8a29e;">Formato: 8888-0000</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección</label>
+                        <input class="input" type="text" th:field="*{direccion}"
+                               placeholder="Ej: Sarapiquí, 200m norte del parque"/>
+                    </div>
+
+                    <div class="section-label" style="margin-top: 16px;">Contraseña</div>
+
+                    <div class="form-group">
+                        <label>Contraseña <span class="req">*</span></label>
+                        <input class="input" type="password" name="contrasena"
+                               id="iPass1" placeholder="Mínimo 8 caracteres" required minlength="8"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar contraseña <span class="req">*</span></label>
+                        <input class="input" type="password" id="iPass2"
+                               placeholder="Repetir contraseña" required/>
+                        <span id="msgPass" style="font-size:11px; color:#dc2626; display:none;">
+                            Las contraseñas no coinciden
+                        </span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" style="margin-top: 8px;"
+                            id="btnRegistrar">
+                        Crear cuenta
+                    </button>
+                </form>
+
+                <div class="login-divider" style="margin-top: 16px;">
+                    ¿Ya tenés cuenta?
+                    <a th:href="@{/}" style="color: var(--verde); font-weight: 600; margin-left: 4px;">
+                        Iniciar sesión
+                    </a>
+                </div>
+
+                <div class="login-divider">GreenHarmony © 2025</div>
+            </div>
+        </div>
+
+        <script>
+            const p1 = document.getElementById('iPass1');
+            const p2 = document.getElementById('iPass2');
+            const msg = document.getElementById('msgPass');
+            const btn = document.getElementById('btnRegistrar');
+
+            function validarPass() {
+                if (p2.value.length === 0) {
+                    msg.style.display = 'none';
+                    btn.disabled = false;
+                    return;
+                }
+                if (p1.value !== p2.value) {
+                    msg.style.display = 'block';
+                    btn.disabled = true;
+                } else {
+                    msg.style.display = 'none';
+                    btn.disabled = false;
+                }
+            }
+
+            p1.addEventListener('input', validarPass);
+            p2.addEventListener('input', validarPass);
+        </script>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

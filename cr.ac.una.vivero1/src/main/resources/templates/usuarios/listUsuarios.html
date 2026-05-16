@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GreenHarmony · Usuarios</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('usuarios')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span>
+                    <span class="crumb-sep">›</span>
+                    <span class="crumb-now">Usuarios</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/usuarios/nuevo}" class="btn btn-primary btn-sm">+ Nuevo usuario</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Gestión de Usuarios</div>
+                            <div class="page-sub">Administra clientes y administradores del sistema</div>
+                        </div>
+                    </div>
+                    <div th:if="${error}" class="alert alert-error">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                        <span th:text="${error}"></span>
+                    </div>
+                    <div th:if="${exito}" class="alert alert-ok">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z"/></svg>
+                        <span th:text="${exito}"></span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-num" th:text="${usuarios.size()}">0</div>
+                            <div class="stat-label">Total registrados</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalClientes}">0</div>
+                            <div class="stat-label">Clientes</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalAdmins}">0</div>
+                            <div class="stat-label">Administradores</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalActivos}">0</div>
+                            <div class="stat-label">Cuentas activas</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de usuarios</span>
+                            <div class="filters">
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusqueda" placeholder="Buscar por nombre o correo..." oninput="filtrarTabla()">
+                                </div>
+                                <select id="selectTipo" class="filter" onchange="filtrarTabla()">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="Cliente">Cliente</option>
+                                    <option value="Administrador">Administrador</option>
+                                </select>
+                                <select id="selectEstado" class="filter" onchange="filtrarTabla()">
+                                    <option value="">Todos los estados</option>
+                                    <option value="activo">Activo</option>
+                                    <option value="inactivo">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Correo</th>
+                                        <th>Teléfono</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Registro</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpoTabla">
+                                    <tr th:if="${#lists.isEmpty(usuarios)}">
+                                        <td colspan="7"><div class="empty">No hay usuarios registrados aún.</div></td>
+                                    </tr>
+                                    <tr th:each="u : ${usuarios}"
+                                        th:attr="data-busqueda=${u.nombre + ' ' + u.apellido + ' ' + u.email},
+                                        data-tipo=${u.tipoUsuario},
+                                        data-estado=${u.activo ? 'activo' : 'inactivo'}">
+                                        <td>
+                                            <div class="user-cell">
+                                                <div th:class="${u.tipoUsuario == 'Administrador'} ? 'avatar av-blue' : 'avatar av-green'"
+                                                     th:text="${#strings.substring(u.nombre,0,1) + #strings.substring(u.apellido,0,1)}">??</div>
+                                                <div>
+                                                    <div class="u-name" th:text="${u.nombre + ' ' + u.apellido}">Nombre</div>
+                                                    <div class="u-id" th:text="'#' + ${u.id}">-</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td th:text="${u.email}">-</td>
+                                        <td th:text="${u.telefono}">-</td>
+                                        <td>
+                                            <span th:class="${u.tipoUsuario == 'Administrador'} ? 'badge badge-blue' : 'badge badge-green'"
+                                                  th:text="${u.tipoUsuario}">-</span>
+                                        </td>
+                                        <td>
+                                            <span th:class="${u.activo} ? 'badge badge-green' : 'badge badge-gray'"
+                                                  th:text="${u.activo} ? 'Activo' : 'Inactivo'">-</span>
+                                        </td>
+                                        <td th:text="${u.fechaRegistro}">-</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a th:href="@{/usuarios/editar(id=${u.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                                <a th:if="${u.activo}"
+                                                   th:href="@{/usuarios/desactivar(id=${u.id})}"
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('¿Desactivar este usuario?')">Desactivar</a>
+                                                <a th:if="${!u.activo}"
+                                                   th:href="@{/usuarios/activar(id=${u.id})}"
+                                                   class="btn btn-activate btn-sm">Activar</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <span id="contadorUsuarios"></span>
+                            <div class="pag-nav" id="paginacionUsuarios"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTabla', 'paginacionUsuarios', 'contadorUsuarios', 10);
+            ocultarAlertas(); 
+        </script>
+    </body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${modoEdicion} ? 'Editar Tarea' : 'Nueva Tarea'">Tarea</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('tareas')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/tareas}" class="crumb">Tareas</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now" th:text="${modoEdicion} ? 'Editar' : 'Nueva'"></span>
+                    <div class="topbar-right">
+                        <a th:href="@{/tareas}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title" th:text="${modoEdicion} ? 'Editar Tarea' : 'Nueva Tarea'"></div>
+                            <div class="page-sub">Registra los datos de la tarea de mantenimiento</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${errorGeneral}" class="alert alert-error" th:text="${errorGeneral}"></div>
+
+                    <div class="card" style="padding:20px;">
+
+                        <form th:if="${!modoEdicion}" th:action="@{/tareas/guardar}"
+                              th:object="${tarea}" method="post">
+
+                            <div class="section-label">Asignación</div>
+                            <div class="field-grid">
+
+                                <div class="field">
+                                    <label>Planta *</label>
+                                    <select class="input" name="planta.id"
+                                            th:classappend="${errorPlanta} ? ' input-error'">
+                                        <option value=""> Seleccione una planta </option>
+                                        <option th:each="p : ${plantas}"
+                                                th:value="${p.id}"
+                                                th:text="${p.nombreComun}"
+                                                th:selected="${tarea.planta != null and tarea.planta.id == p.id}">
+                                        </option>
+                                    </select>
+                                    <span class="hint error" th:if="${errorPlanta}" th:text="${errorPlanta}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Administrador *</label>
+                                    <select class="input" name="empleado.id"
+                                            th:classappend="${errorEmpleado} ? ' input-error'">
+                                        <option value=""> Seleccione un administrador </option>
+                                        <option th:each="e : ${empleados}"
+                                                th:value="${e.id}"
+                                                th:text="${e.nombre} + ' ' + ${e.apellido}"
+                                                th:selected="${tarea.empleado != null and tarea.empleado.id == e.id}">
+                                        </option>
+                                    </select>
+                                    <span class="hint error" th:if="${errorEmpleado}" th:text="${errorEmpleado}"></span>
+                                </div>
+                            </div>
+
+                            <div class="section-label mt">Detalles</div>
+                            <div class="field-grid">
+
+                                <div class="field">
+                                    <label>Tipo de tarea *</label>
+                                    <input class="input" type="text" name="tipoTarea"
+                                           maxlength="100" placeholder="Ej: Riego, Poda, Fertilización"
+                                           th:value="${tarea.tipoTarea}"
+                                           th:classappend="${errorTipoTarea} ? ' input-error'">
+                                    <span class="hint error" th:if="${errorTipoTarea}" th:text="${errorTipoTarea}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Prioridad *</label>
+                                    <select class="input" name="prioridad"
+                                            th:classappend="${errorPrioridad} ? ' input-error'">
+                                        <option value=""> Seleccione la prioridad </option>
+                                        <option value="Alta"  th:selected="${tarea.prioridad == 'Alta'}">Alta</option>
+                                        <option value="Media" th:selected="${tarea.prioridad == 'Media'}">Media</option>
+                                        <option value="Baja"  th:selected="${tarea.prioridad == 'Baja'}">Baja</option>
+                                    </select>
+                                    <span class="hint error" th:if="${errorPrioridad}" th:text="${errorPrioridad}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Fecha programada *</label>
+                                    <input class="input" type="date" name="fechaProgramada"
+                                           th:value="${tarea.fechaProgramada != null ? #temporals.format(tarea.fechaProgramada, 'yyyy-MM-dd') : ''}"
+                                           th:classappend="${errorFechaProgramada} ? ' input-error'">
+                                    <span class="hint error" th:if="${errorFechaProgramada}" th:text="${errorFechaProgramada}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Descripción</label>
+                                    <input class="input" type="text" name="descripcion"
+                                           maxlength="255" th:value="${tarea.descripcion}"
+                                           th:classappend="${errorDescripcion} ? ' input-error'">
+                                    <span class="hint error" th:if="${errorDescripcion}" th:text="${errorDescripcion}"></span>
+                                </div>
+
+                                <div class="field" style="grid-column:span 2">
+                                    <label>Observaciones</label>
+                                    <textarea class="input" name="observaciones" rows="3"
+                                              maxlength="500"
+                                              th:classappend="${errorObservaciones} ? ' input-error'"
+                                              th:text="${tarea.observaciones}"></textarea>
+                                    <span class="hint error" th:if="${errorObservaciones}" th:text="${errorObservaciones}"></span>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;display:flex;gap:8px;">
+                                <button type="submit" class="btn btn-primary">Registrar tarea</button>
+                                <a th:href="@{/tareas}" class="btn btn-outline">Cancelar</a>
+                            </div>
+                        </form>
+                        
+                        <form th:if="${modoEdicion}" th:action="@{/tareas/actualizar}"
+                              th:object="${tarea}" method="post">
+                            <input type="hidden" name="id" th:value="${tarea.id}"/>
+
+                            <div class="section-label">Asignación</div>
+                            <div class="field-grid">
+
+                                <div class="field">
+                                    <label>Planta *</label>
+                                    <select class="input" name="planta.id"
+                                            th:classappend="${errorPlanta} ? ' input-error'">
+                                        <option value=""> Seleccione una planta </option>
+                                        <option th:each="p : ${plantas}"
+                                                th:value="${p.id}"
+                                                th:text="${p.nombreComun}"
+                                                th:selected="${tarea.planta != null and tarea.planta.id == p.id}">
+                                        </option>
+                                    </select>
+                                    <span class="hint error" th:if="${errorPlanta}" th:text="${errorPlanta}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Empleado *</label>
+                                    <select class="input" name="empleado.id"
+                                            th:classappend="${errorEmpleado} ? ' input-error'">
+                                        <option value=""> Seleccione un administrador </option>
+                                        <option th:each="e : ${empleados}"
+                                                th:value="${e.id}"
+                                                th:text="${e.nombre} + ' ' + ${e.apellido}"
+                                                th:selected="${tarea.empleado != null and tarea.empleado.id == e.id}">
+                                        </option>
+                                    </select>
+                                    <span class="hint error" th:if="${errorEmpleado}" th:text="${errorEmpleado}"></span>
+                                </div>
+                            </div>
+
+                            <div class="section-label mt">Detalles</div>
+                            <div class="field-grid">
+
+                                <div class="field">
+                                    <label>Tipo de tarea *</label>
+                                    <input class="input" type="text" name="tipoTarea"
+                                           maxlength="100" placeholder="Ej: Riego, Poda, Fertilización"
+                                           th:value="${tarea.tipoTarea}"
+                                           th:classappend="${errorTipoTarea} ? ' input-error'">
+                                    <span class="hint error" th:if="${errorTipoTarea}" th:text="${errorTipoTarea}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Prioridad *</label>
+                                    <select class="input" name="prioridad"
+                                            th:classappend="${errorPrioridad} ? ' input-error'">
+                                        <option value="">— Seleccione la prioridad —</option>
+                                        <option value="Alta"  th:selected="${tarea.prioridad == 'Alta'}">Alta</option>
+                                        <option value="Media" th:selected="${tarea.prioridad == 'Media'}">Media</option>
+                                        <option value="Baja"  th:selected="${tarea.prioridad == 'Baja'}">Baja</option>
+                                    </select>
+                                    <span class="hint error" th:if="${errorPrioridad}" th:text="${errorPrioridad}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Fecha programada *</label>
+                                    <input class="input" type="date" name="fechaProgramada"
+                                           th:value="${tarea.fechaProgramada != null ? #temporals.format(tarea.fechaProgramada, 'yyyy-MM-dd') : ''}"
+                                           th:classappend="${errorFechaProgramada} ? ' input-error'">
+                                    <span class="hint error" th:if="${errorFechaProgramada}" th:text="${errorFechaProgramada}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label>Descripción</label>
+                                    <input class="input" type="text" name="descripcion"
+                                           maxlength="255" th:value="${tarea.descripcion}"
+                                           th:classappend="${errorDescripcion} ? ' input-error'">
+                                    <span class="hint error" th:if="${errorDescripcion}" th:text="${errorDescripcion}"></span>
+                                </div>
+
+                                <div class="field" style="grid-column:span 2">
+                                    <label>Observaciones</label>
+                                    <textarea class="input" name="observaciones" rows="3"
+                                              maxlength="500"
+                                              th:classappend="${errorObservaciones} ? ' input-error'"
+                                              th:text="${tarea.observaciones}"></textarea>
+                                    <span class="hint error" th:if="${errorObservaciones}" th:text="${errorObservaciones}"></span>
+                                </div>
+
+                                <div class="field">
+                                    <label class="check-opt">
+                                        <input type="checkbox" name="completada" value="true"
+                                               th:checked="${tarea.completada}">
+                                        <span class="check-box">
+                                            <svg viewBox="0 0 12 10" fill="none" stroke="white" stroke-width="2.5"
+                                                 stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="1.5 5 4.5 8.5 10.5 1.5"/>
+                                            </svg>
+                                        </span>
+                                        Tarea completada
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:16px;display:flex;gap:8px;">
+                                <button type="submit" class="btn btn-primary">Actualizar tarea</button>
+                                <a th:href="@{/tareas}" class="btn btn-outline">Cancelar</a>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

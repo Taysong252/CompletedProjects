@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Cultivos</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('cultivos')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <span class="crumb-now">Cultivos</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/cultivos/nuevo}" class="btn btn-primary btn-sm">+ Nuevo cultivo</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Gestión de Cultivos</div>
+                            <div class="page-sub">Seguimiento de siembras, trasplantes y cosechas</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${exito}" class="alert alert-ok" th:text="${exito}"></div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="stats" style="grid-template-columns:repeat(2,1fr);">
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalActivos ?: 0}">0</div>
+                            <div class="stat-label">En curso</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-num" th:text="${totalCompletados ?: 0}">0</div>
+                            <div class="stat-label">Completados</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de cultivos</span>
+                            <div class="filters">
+                                <!-- Búsqueda en vivo por técnica -->
+                                <div class="search-box">
+                                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>
+                                    <input type="text" id="inputBusquedaCultivos"
+                                           placeholder="Buscar por técnica..."/>
+                                </div>
+                                <!-- Filtro estado: en curso / completado -->
+                                <select id="selectEstadoCultivos" class="input"
+                                        style="width:auto; padding:4px 8px; font-size:13px;">
+                                    <option value="">Todos</option>
+                                    <option value="en-curso">En curso</option>
+                                    <option value="completado">Completados</option>
+                                </select>
+                                <a th:href="@{/cultivos}" class="btn btn-outline btn-sm">Ver todos</a>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Planta</th>
+                                    <th>Administrador</th>
+                                    <th>F. Siembra</th>
+                                    <th>F. Cosecha</th>
+                                    <th>Técnica</th>
+                                    <th>Sustrato</th>
+                                    <th>Tasa éxito</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaCultivos">
+                                <tr th:if="${cultivos == null or cultivos.empty}">
+                                    <td colspan="9"><div class="empty">No hay cultivos registrados.</div></td>
+                                </tr>
+                                <tr th:each="cultivo : ${cultivos}"
+                                    th:attr="data-busqueda=${cultivo.tecnica != null ? cultivo.tecnica : ''},
+                                             data-activo=${cultivo.completada ? 'completado' : 'en-curso'}">
+                                    <td th:text="${cultivo.planta != null ? cultivo.planta.nombreComun : 'N/A'}"></td>
+                                    <td th:text="${cultivo.admin != null ? cultivo.admin.nombre + ' ' + cultivo.admin.apellido : 'N/A'}"></td>
+                                    <td th:text="${#temporals.format(cultivo.fechaSiembra, 'dd/MM/yyyy')}"></td>
+                                    <td th:text="${cultivo.fechaCosecha != null ? #temporals.format(cultivo.fechaCosecha, 'dd/MM/yyyy') : '—'}"></td>
+                                    <td th:text="${cultivo.tecnica != null ? cultivo.tecnica : '—'}"></td>
+                                    <td th:text="${cultivo.sustrato != null ? cultivo.sustrato : '—'}"></td>
+                                    <td>
+                                        <span th:text="${cultivo.tasaExito} + '%'"
+                                              th:class="${cultivo.tasaExito >= 70} ? 'badge badge-green' :
+                                                        (${cultivo.tasaExito >= 40} ? 'badge badge-blue' : 'badge badge-gray')">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${cultivo.completada}" class="badge badge-green">Completado</span>
+                                        <span th:unless="${cultivo.completada}" class="badge badge-blue">En curso</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/cultivos/editar(id=${cultivo.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:unless="${cultivo.completada}"
+                                               th:href="@{/cultivos/completar(id=${cultivo.id})}"
+                                               class="btn btn-activate btn-sm"
+                                               onclick="return confirm('¿Marcar como completado?')">✅</a>
+                                            <a th:href="@{/cultivos/eliminar(id=${cultivo.id})}"
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Eliminar este cultivo?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <span id="contadorCultivos"></span>
+                            <div class="pag-nav" id="paginacionCultivos"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            iniciarPaginacion('cuerpoTablaCultivos', 'paginacionCultivos', 'contadorCultivos', 10);
+            activarFiltrosConSelect('inputBusquedaCultivos', 'selectEstadoCultivos', 'cuerpoTablaCultivos');
+            ocultarAlertas();
+        </script>
+    </body>
+</html>

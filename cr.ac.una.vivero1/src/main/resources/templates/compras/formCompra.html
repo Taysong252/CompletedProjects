@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <title>Registrar Compra - GreenHarmony</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('compras')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <a th:href="@{/insumos/}" class="crumb">Insumos</a><span class="crumb-sep">›</span>
+                    <span class="crumb-now">Registrar Compra</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/insumos/}" class="btn btn-outline btn-sm">Cancelar</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Registrar Compra de Insumo</div>
+                            <div class="page-sub">El stock del insumo se actualizará automáticamente al guardar</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${errorInsumo}"   class="alert alert-error">⚠️ <span th:text="${errorInsumo}"></span></div>
+                    <div th:if="${errorCantidad}" class="alert alert-error">⚠️ <span th:text="${errorCantidad}"></span></div>
+                    <div th:if="${errorPrecio}"   class="alert alert-error">⚠️ <span th:text="${errorPrecio}"></span></div>
+                    <div th:if="${errorFecha}"    class="alert alert-error">⚠️ <span th:text="${errorFecha}"></span></div>
+
+                    <div class="card" style="padding: 20px;">
+                        <form th:action="@{/compras/save}" method="post" th:object="${compraNew}">
+                            <input type="hidden" th:field="*{id}"/>
+
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label>Insumo <span class="req">*</span></label>
+                                    <select class="input" th:field="*{insumoId}" required>
+                                        <option value="0">Seleccionar insumo</option>
+                                        <option th:each="i : ${insumos}"
+                                                th:value="${i.id}"
+                                                th:text="${i.nombreInsumo} + ' (Stock actual: ' + ${i.cantidadStock} + ' ' + ${i.unidadMedida} + ')'"
+                                                th:selected="${i.id == compraNew.insumoId}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Proveedor</label>
+                                    <input class="input" type="text" th:field="*{proveedorNombre}"
+                                           placeholder="Nombre del proveedor"/>
+                                </div>
+                                <div class="field">
+                                    <label>Cantidad Comprada <span class="req">*</span></label>
+                                    <input class="input" type="number" th:field="*{cantidad}"
+                                           min="1" placeholder="0" required/>
+                                </div>
+                                <div class="field">
+                                    <label>Precio Unitario (₡) <span class="req">*</span></label>
+                                    <input class="input" type="number" th:field="*{precioUnitario}"
+                                           step="0.01" min="0.01" placeholder="0.00" required/>
+                                </div>
+                                <div class="field">
+                                    <label>Fecha de Compra <span class="req">*</span></label>
+                                    <input class="input" type="date" th:field="*{fechaCompra}" required/>
+                                </div>
+                                <div class="field" style="grid-column: span 2">
+                                    <label>Observaciones</label>
+                                    <textarea class="input" th:field="*{observaciones}"
+                                              placeholder="Notas sobre esta compra..."></textarea>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 16px;">
+                                <button type="submit" class="btn btn-primary">Registrar Compra</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

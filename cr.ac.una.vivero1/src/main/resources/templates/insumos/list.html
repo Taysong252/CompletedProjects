@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+    <head>
+        <title>Insumos - GreenHarmony</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" th:href="@{/images/logoGreenHarmony.png}"/>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="app">
+            <aside th:replace="~{fragmentos :: sidebar('insumos')}"></aside>
+            <div class="main">
+                <header class="topbar">
+                    <span class="crumb">GreenHarmony</span><span class="crumb-sep">›</span>
+                    <span class="crumb-now">Insumos</span>
+                    <div class="topbar-right">
+                        <a th:href="@{/insumos/add}" class="btn btn-primary btn-sm">+ Nuevo Insumo</a>
+                    </div>
+                </header>
+                <div class="page">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">Gestión de Insumos</div>
+                            <div class="page-sub">Administra el inventario de insumos del vivero</div>
+                        </div>
+                    </div>
+                    <div th:if="${exito}" class="alert alert-ok">✅ <span th:text="${exito}"></span></div>
+                    <div class="alert alert-warning" th:each="i : ${insumos}"
+                         th:if="${i.stockMinimo > 0 and i.cantidadStock <= i.stockMinimo}">
+                        ⚠️
+                        <p>Poco stock: <strong th:text="${i.nombreInsumo}"></strong> —
+                            Disponible: <span th:text="${i.cantidadStock}"></span>
+                            <span th:text="${i.unidadMedida}"></span>
+                            (mínimo: <span th:text="${i.stockMinimo}"></span>)
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div class="card-head">
+                            <span class="card-title">Lista de insumos</span>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" id="inputBusqueda" class="input" style="width:200px;" placeholder="Buscar por nombre..."/>
+                                <select id="selectCategoria" class="input" style="width:160px;">
+                                    <option value="">Todas las categorías</option>
+                                    <option value="Fertilizante">Fertilizante</option>
+                                    <option value="Sustrato">Sustrato</option>
+                                    <option value="Pesticida">Pesticida</option>
+                                    <option value="Herramienta">Herramienta</option>
+                                    <option value="Empaque">Empaque</option>
+                                    <option value="Semilla">Semilla</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Stock</th>
+                                    <th>Unidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaInsumos">
+                                <tr th:each="i : ${insumos}"
+                                    th:classappend="${i.stockMinimo > 0 and i.cantidadStock <= i.stockMinimo} ? 'row-warning' : ''">
+                                    <td th:text="${i.nombreInsumo}"></td>
+                                    <td><span class="badge badge-green" th:text="${i.categoria}"></span></td>
+                                    <td>
+                                        <span th:text="${i.cantidadStock}"
+                                              th:classappend="${i.stockMinimo > 0 and i.cantidadStock <= i.stockMinimo} ? 'text-danger' : 'text-ok'">
+                                        </span>
+                                    </td>
+                                    <td th:text="${i.unidadMedida}"></td>
+                                    <td th:text="'₡ ' + ${#numbers.formatDecimal(i.precioUnitario, 1, 'COMMA', 0, 'POINT')}"></td>
+                                    <td>
+                                        <span th:if="${i.activo}" class="badge badge-green">Activo</span>
+                                        <span th:unless="${i.activo}" class="badge badge-gray">Inactivo</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a th:href="@{/compras/add(insumoId=${i.id})}" class="btn btn-outline btn-sm">+ Compra</a>
+                                            <a th:href="@{/compras/historial(insumoId=${i.id})}" class="btn btn-outline btn-sm">Historial</a>
+                                            <a th:href="@{/insumos/update(id=${i.id})}" class="btn btn-outline btn-sm">Editar</a>
+                                            <a th:href="@{/insumos/delete(id=${i.id})}" class="btn btn-danger btn-sm"
+                                               onclick="return confirm('¿Eliminar este insumo?')">Eliminar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(insumos)}">
+                                    <td colspan="7"><div class="empty">No hay insumos registrados.</div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <span id="contadorInsumos"></span>
+                            <div class="pag-nav" id="paginacionInsumos"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/funciones.js}"></script>
+        <script>
+            initInsumos();
+        </script>
+    </body>
+</html>
