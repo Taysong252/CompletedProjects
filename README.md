@@ -118,14 +118,6 @@ Abrí el navegador en `http://localhost:8080`
 | **Administrador** | Panel completo de gestión de todos los módulos |
 | **Cliente** | Portal reducido: visitas, catálogo, promociones y quejas |
 
----
-
-### 📸 Capturas de pantalla
-
-> _Agregá aquí imágenes del panel admin, portal cliente y formulario de visitas._
-
----
-
 <a name="english"></a>
 
 ## 🇺🇸 English
@@ -236,14 +228,6 @@ Open your browser at `http://localhost:8080`
 |---|---|
 | **Administrator** | Full management panel across all modules |
 | **Customer** | Reduced portal: visits, catalog, promotions, and complaints |
-
----
-
-### 📸 Screenshots
-
-> _Add screenshots of the admin panel, customer portal, and visit form here._
-
----
 
 <p align="center">
   Desarrollado con 🌱 para el vivero GreenHarmony &nbsp;·&nbsp; Built with 🌱 for GreenHarmony Nursery
