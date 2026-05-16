@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="src/main/resources/static/images/logoGreenHarmony.png" alt="GreenHarmony Logo" width="100"/>
-</p>
 
 <h1 align="center">🌿 GreenHarmony — Sistema de Gestión de Vivero</h1>
 
